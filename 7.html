@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>近现代史刚要第七章</title>
+  <style>
+    body { font-family: sans-serif; }
+    .modal {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: white; padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      width: 400px; border-radius: 10px;
+    }
+    .option {
+      margin: 8px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s, color 0.2s;
+      text-align: left;
+    }
+    .option.selected {
+      background-color: #444 !important;
+      color: #fff !important;
+      border-color: #444 !important;
+    }
+    .option.correct {
+      background-color: #43a047 !important;
+      color: #fff !important;
+      border-color: #43a047 !important;
+    }
+    .option.wrong {
+      background-color: #ffcaca;
+    }
+    .buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .multi-submit-btn {
+      display: block;
+      margin: 32px auto 0 auto;
+      background: linear-gradient(to right, #4a00e0, #8e2de2);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 15px;
+      font-size: 0.7rem;
+      font-weight: 300;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(142, 45, 226, 0.2);
+    }
+    .multi-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<div class="modal" id="quizModal">
+  <div id="question"></div>
+  <div id="options"></div>
+  <div class="buttons">
+    <button onclick="prevQuestion()">上一题</button>
+    <button onclick="showAnswer()">不会</button>
+    <button onclick="nextQuestion()">下一题</button>
+  </div>
+</div>
+
+<script>
+
+
+const quiz = [
+  {
+    question: "1.决定将党在抗日战争时期实行的减租减息政策改变为“耕者有其田”的政策的文件是",
+    options: [
+      "A、《中国土地法大纲》",
+      "B、《兴国土地法》",
+      "C、《井冈山土地法》",
+      "D、《关于清算、减租及土地问题的指示》"
+    ],
+    answer: 0
+  },
+  {
+    question: "1948年10月2日，刘少奇同志在同华北记者团谈话时讲了一个希腊神话故事：巨人安泰是地神之子，他在同对手搏斗时，只要身不离地，就能从大地母亲那里不断吸取力量，所向无敌；但是，一旦他离开地面，便变得毫无力量。他的对手赫拉克勒斯发现了他的这一特征，把他举到半空中扼死。刘少奇借用这一神话故事，表明我们的党始终要",
+    options: [
+      "A、坚持理论联系实际",
+      "B、保持党的方针政策正确",
+      "C、保持对敌人的高度警惕",
+      "D、保持同人民群众的血肉联系"
+    ],
+    answer: 3
+  },
+  {
+    question: "中国共产党在中国革命中战胜敌人的三大法宝是",
+    options: [
+      "A、实事求是、群众路线、批评与自我批评",
+      "B、统一战线、土地革命、武装斗争",
+      "C、统一战线、武装斗争、党的建设",
+      "D、根据地建设、工人运动、农民运动"
+    ],
+    answer: 2
+  },
+  {
+    question: "解放战争时期中国共产党领导建立的统一战线是",
+    options: [
+      "A、第一次国共合作",
+      "B、抗日民族统一战线",
+      "C、工农民主统一战线",
+      "D、人民民主统一战线"
+    ],
+    answer: 3
+  },
+  {
+    question: "5.1949年9月，中国人民政治协商会议通过的起临时宪法作用的文件是",
+    options: [
+      "A、《论人民民主专政》",
+      "B、《中国人民政治协商会议组织法》",
+      "C、《中国人民政治协商会议共同纲领》",
+      "D、《中华人民共和国中央人民政府组织法》"
+    ],
+    answer: 2
+  },
+  {
+    question: "“房子是应该经常打扫的，不打扫就会积满了灰尘，脸是应该经常洗的，不洗也就会灰尘满面。我们同志的思想、我们党的工作，也会沾染灰尘的，也应该打扫和洗涤。”这段话形象地反映了中国共产党在长期革命实践中形成的",
+    options: [
+      "A、密切联系群众的优良作风",
+      "B、艰苦奋斗的优良作风",
+      "C、理论联系实际的优良作风",
+      "D、批评与自我批评的优良作风"
+    ],
+    answer: 3
+  },
+  {
+    question: "在1947年10月被国民党当局宣布为“非法团体”并明令“严加取缔”的民主党派是",
+    options: [
+      "A、中国民主同盟",
+      "B、中国民主建国会",
+      "C、中国民主促进会",
+      "D、中国国民党革命委员会"
+    ],
+    answer: 0
+  },
+  {
+    question: "1949年元旦蒋介石发表“求和”声明，其真实意图是",
+    options: [
+      "A、希望结束内战",
+      "B、希望国共两党关系恢复到政协协议的框架下",
+      "C、与中共和谈，划江而治",
+      "D、争取时间，准备卷土重来"
+    ],
+    answer: 3
+  },
+  {
+    question: "1947年6月，刘、邓大军主力实施的中央突破、千里跃进大别山，揭开了人民解放战争",
+    options: [
+      "A、战略防御的序幕",
+      "B、战略相持的序幕",
+      "C、战略进攻的序幕",
+      "D、战略决战的序幕"
+    ],
+    answer: 2
+  },
+  {
+    question: "10.中国共产党部队在数量上首次超越了国民党部队是在哪次战役结束后",
+    options: [
+      "A、辽沈战役",
+      "B、淮海战役",
+      "C、平津战役",
+      "D、锦州战役"
+    ],
+    answer: 0
+  },
+  {
+    question: "抗日战争后期疯长起来，成为中国人民的新的敌人，这种反动势力是指",
+    options: [
+      "A、帝国主义",
+      "B、封建主义",
+      "C、官僚资本主义",
+      "D、军阀主义"
+    ],
+    answer: 2
+  },
+  {
+    question: "率领北平国民党军队接受和平改编的国民党将领是",
+    options: [
+      "A、张治中",
+      "B、蔡廷锴",
+      "C、杜聿明",
+      "D、傅作义"
+    ],
+    answer: 3
+  },
+  {
+    question: "在第二次世界大战结束后新的国际格局下，美国采取的对华政策是",
+    options: [
+      "A、保持中立的政策",
+      "B、扶蒋反共的政策",
+      "C、武力干涉的政策",
+      "D、遏制中国的政策"
+    ],
+    answer: 1
+  },
+  {
+    question: "毛泽东说：“如果我们能够普遍彻底地解决土地问题，我们就获得了足以战胜一切的敌人的最基本条件。”这里的“最基本条件”是",
+    options: [
+      "A、建立稳固的革命根据地",
+      "B、建立党领导下的人民军队",
+      "C、取得占人口最多的广大农民的拥护、支持",
+      "D、实行“工农武装割据”"
+    ],
+    answer: 2
+  },
+  {
+    question: "15.人民解放战争中揭开战略进攻序幕的事件是",
+    options: [
+      "A、粉碎国民党军队对陕北的进攻",
+      "B、刘邓大军挺进大别山",
+      "C、陈毅、粟裕挺进苏鲁豫皖",
+      "D、陈庚、谢富治挺进豫西"
+    ],
+    answer: 1
+  },
+  {
+    question: "在全国人民代表大会召开以前，代行其职权的是",
+    options: [
+      "A、中央工作委员会",
+      "B、中共中央军事委员会",
+      "C、中国人民政治协商会议",
+      "D、中华人民共和国中央人民政府"
+    ],
+    answer: 2
+  },
+  {
+    question: "抗日战争胜利后，美蒋发动的全面内战开始于国民党军队进攻",
+    options: [
+      "A、中原解放区",
+      "B、陕甘宁解放区",
+      "C、山东解放区",
+      "D、上党地区"
+    ],
+    answer: 0
+  },
+  {
+    question: "中国民主革命的基本问题是",
+    options: [
+      "A、武装斗争问题",
+      "B、党的建设问题",
+      "C、统一战线问题",
+      "D、农民问题"
+    ],
+    answer: 3
+  },
+  {
+    question: "1945年，双十协定确认和平建国的基本方针，同意",
+    options: [
+      "A、和平、民主、团结",
+      "B、长期合作，坚决避免内战",
+      "C、巩固国内和平，实现民主改革",
+      "D、独立、自由、和平"
+    ],
+    answer: 0
+  },
+  {
+    question: "20.1949年1月，李济深、沈钧儒等著名民主人士55人联合发表，表示愿意接受中国共产党的领导的是",
+    options: [
+      "A、《对目前时局的宣言》",
+      "B、《和平建国纲领》",
+      "C、《对时局的意见》",
+      "D、《国内和平协定》"
+    ],
+    answer: 2
+  },
+  {
+    question: "21. 1945年8月，《大公报》报道毛泽东来到重庆的消息时称：“爱好民主自由的人士都知道，这是维系中国目前及未来历史和人民幸福的一个喜讯。”这反映了“爱好民主自由的人士”期盼(    )",
+    options: [
+      "A、国共双方和平协商，创建新中国",
+      "B、国共双方消除隔阂，共同抗日",
+      "C、共产党领导人民推翻国民党的统治",
+      "D、共产党与民主党派合作建立新中国"
+    ],
+    answer: 0
+  },
+  {
+    question: "22. 解放战争时期，国民党统治区人民民主运动高涨的根本原因是（    ）",
+    options: [
+      "A、中国共产党组织了反蒋统治的第二条战线",
+      "B、上海学生举行了声势浩大的“三反”斗争",
+      "C、国民党蒋介石集团的经济崩溃和政治危机",
+      "D、民主党派的联合斗争和人民起义遍及各地"
+    ],
+    answer: 2
+  },
+  {
+    question: "23. 解放战争时期，毛泽东说：“蒋介石两个拳头（指陕北和山东）这么一伸，他的胸膛就露出来了。所以，我们的战略就是要把这两个拳头紧紧拖住，对准他的胸膛插上一刀”。这里说的“插上一刀”指的是（    ）",
+    options: [
+      "A、千里跃进大别山",
+      "B、百万雄师过长江",
+      "C、挺进大西南",
+      "D、挥师大西北"
+    ],
+    answer: 0
+  },
+  {
+    question: "24. 标志着解放区在农民土地问题上，开始由削弱封建剥削，向变革封建土地关系、废除封建剥削制度过度的文件是（      ）",
+    options: [
+      "A、《井冈山土地法》",
+      "B、《兴国土地法》",
+      "C、《中国土地法大纲》",
+      "D、《关于清算、减租及土地问题的指示》"
+    ],
+    answer: 1
+  },
+  {
+    question: "25. 标志着中国的新型政党制度——中国领导的多党合作和政治协商制度的确立的事件是：（    ）",
+    options: [
+      "A、55名民主党派的领导人和著名的无党派民主人士联合发表《对时局的意见》",
+      "B、中共中央发布《纪念五一国际劳动节的口号》",
+      "C、中国人民政治协商会议第一届全体会议的召开",
+      "D、第一届全国人民代表大会的召开"
+    ],
+    answer: 2
+  },
+  {
+    question: "26. “作风建设永远在路上”。在九十多年波澜壮阔的历史进程中，中国共产党始终十分重视党的作风建设。在党的七届二中全会上，毛泽东强调必须保持的党的作风是（    ）",
+    options: [
+      "A、理论和实践相结合的作风",
+      "B、谦虚、谨慎、不骄、不躁和艰苦奋斗的作风",
+      "C、和人民群众紧密地联系在一起的作风",
+      "D、自我批评的作风"
+    ],
+    answer: 1
+  },
+  {
+    question: "27. 在中国共产党七届二中全会上，毛泽东提出了“两个务必”的思想，其原因主要是（   ）",
+    options: [
+      "A、中国将由新民主主义社会转变为社会主义",
+      "B、中国共产党即将成为执政党",
+      "C、党的工作方式发生了变化",
+      "D、全国大陆即将解放"
+    ],
+    answer: 1
+  },
+  {
+    question: "28. 1947年6月，人民解放军实施战略进攻时，就敌我力量对比而言（    ）",
+    options: [
+      "A、人民解放军在数量上与装备上已占有一定优势",
+      "B、人民解放军在数量上还不占有优势",
+      "C、人民解放军在数量上已超过国民党军队",
+      "D、国民党军队在数量与装备上处于明显劣势"
+    ],
+    answer: 1
+  },
+  {
+    question: "29. 《中国人民政治协商会议共同纲领》规定了我国的根本政治制度，我国的国体是（  ）",
+    options: [
+      "A、工农民主专政",
+      "B、苏维埃共和国",
+      "C、人民民主专政",
+      "D、资产阶级共和国"
+    ],
+    answer: 2
+  },
+  {
+    question: "30. 1949年9月21日，中国人民政治协商会议第一届全体会议在北平隆重开幕。这次会议与1946年1月在重庆召开的政治协商会议的不同在于（   ）",
+    options: [
+      "A、中国共产党居于领导地位",
+      "B、多党派参加",
+      "C、民主党派也是执政党",
+      "D、通过的《共同纲领》属于社会主义性质"
+    ],
+    answer: 0
+  }
+];
+
+const multiQuiz = [
+  {
+    question: "1、1945年8月，中共中央发表对时局的宣言，明确提出的口号是（   ）",
+    options: [
+      "A、和平",
+      "B、民主",
+      "C、团结",
+      "D、自由"
+    ],
+    answer: [0,1,2,3] // 通常是四项都提及，这里按题意你可调整
+  },
+  {
+    question: "2、抗战结束后，蒋介石愿与中国共产党进行和平谈判，其目的是（    ）",
+    options: [
+      "A、敷衍国内外要求和平的舆论",
+      "B、诱使中共交出人民军队和解放区政权",
+      "C、为把战争责任转嫁给中共制造借口",
+      "D、争取时间为进行内战做准备"
+    ],
+    answer: [0,1,2,3]
+  },
+  {
+    question: "3、抗日战争结束后，中国共产党为避免内战，实现和平建国，采取的主要措施有（ ）",
+    options: [
+      "A、参加政协会议并维护政协协议",
+      "B、赴重庆与国民党当局进行谈判",
+      "C、在国统区开辟第二条战线",
+      "D、在解放区开展土地改革运动"
+    ],
+    answer: [0,1,2,3]
+  },
+  {
+    question: "4、解放战争时期，在国民党统治区形成了以学生运动为先导的人民民主运动，成为配合人民解放战争的第二条战线。第二条战线形成的原因是（  ）",
+    options: [
+      "A、国民党政府专制独裁、官员贪污腐败",
+      "B、国民党在军事上的失利",
+      "C、国民党顽固坚持内战政策",
+      "D、国统区爆发严重经济危机"
+    ],
+    answer: [0,2,3]
+  },
+  {
+    question: "5、毛泽东总结中国共产党成立以来的历史经验，指出中国共产党在中国革命中战胜敌人的三大法宝是（   ）",
+    options: [
+      "A、统一战线",
+      "B、土地革命",
+      "C、武装斗争",
+      "D、党的建设"
+    ],
+    answer: [0,2,3]
+  },
+  {
+    question: "6、1947年2月至6月，中国人民解放军粉碎了国民党军队（   ）。",
+    options: [
+      "A、对陕北的重点进攻",
+      "B、对东北解放区的重点进攻",
+      "C、对中原解放区的重点进攻",
+      "D、对山东解放区的重点进攻"
+    ],
+    answer: [0]
+  },
+  {
+    question: "7、1948年9月12日至1949年1月31日，中国人民解放军发动的三大战略决战是（  ）。",
+    options: [
+      "A、辽沈战役",
+      "B、淮海战役",
+      "C、平津战役",
+      "D、渡江战役"
+    ],
+    answer: [0,1,2]
+  },
+  {
+    question: "8、1949年3月中共中央离开西柏坡迁往北平。毛泽东说：“今天是进京赶考的日子，我们决不当李自成，我们都希望考个好成绩。”这句话的意思是（  ）",
+    options: [
+      "A、避免农民战争中的流寇主义",
+      "B、消除农民阶级的封建思想",
+      "C、防止产生骄傲麻痹思想",
+      "D、防止干部中出现享乐腐化作风"
+    ],
+    answer: [2,3]
+  },
+  {
+    question: "9、中共代表团在结束重庆政治协商会议返回延安时，代表团成员李维汉在当天的日记中写道：“国共谈判破裂了，但我党满载人心归去。”其原因主要有（  ）",
+    options: [
+      "A、中国人民争得了一年的和平休息时期",
+      "B、暴露了国民党的反动本质",
+      "C、强迫了国民党统治集团履行政治协议",
+      "D、通过这次会议，各界群众懂得了什么人应当对战争承担责任"
+    ],
+    answer: [0,1,3]
+  },
+  {
+    question: "10、1949年9月21日，中国人民政治协商会议第一届全体会议在北平中南海怀仁堂隆重开幕，参加会议的代表共662人，代表主要来自（   ）",
+    options: [
+      "A、中国共产党",
+      "B、各民主党派",
+      "C、各人民团体",
+      "D、无党派民主人士"
+    ],
+    answer: [0,1,2,3]
+  },
+  {
+    question: "11、在中共七届二中全会上，毛泽东告诫全党，夺取全国胜利，这只是万里长征走完了第一步，中国的革命是伟大的，但革命以后的路更长，工作更伟大，更艰苦。据此，他提出了“两个务必”的思想，即（   ）",
+    options: [
+      "A、务必由农业国转变为工业国",
+      "B、务必使同志们继续地保持谦虚、谨慎、不骄、不躁的作风",
+      "C、务必由新民主主义社会转变为社会主义社会",
+      "D、务必使同志们继续地保持艰苦奋斗的作风"
+    ],
+    answer: [1,3]
+  },
+  {
+    question: "12、解放战争时期关于土地问题的两个重要文献是（   ）",
+    options: [
+      "A、《井冈山土地法》",
+      "B、《兴国土地法》",
+      "C、《中国土地法大纲》",
+      "D、《五四指示》"
+    ],
+    answer: [1,2]
+  },
+  {
+    question: "13、为了打退国民党对解放区的军事进攻，中共中央作出的决定是（  ）",
+    options: [
+      "A、必须和人民群众亲密合作",
+      "B、必须争取一切可以争取的人",
+      "C、在党的领导下建立最广泛的人民民主统一战线",
+      "D、必须采取集中优势兵力、各个歼灭敌人的作战原则"
+    ],
+    answer: [2,3]
+  },
+  {
+    question: "14、抗日战争胜利后，国民党的反共方针得到了美国政府的支持。美国在中国的短期目标是（   ）",
+    options: [
+      "A、让蒋介石政府成为它在亚洲的主要支持者",
+      "B、“遏制苏联”",
+      "C、维护美国在中国的殖民主义利益",
+      "D、支持中国人民的革命"
+    ],
+    answer: [0,1,2]
+  },
+  {
+    question: "15、1945年8月28日，中国共产党飞赴重庆与国民党当局进行谈判的主要代表是（  ）",
+    options: [
+      "A、毛泽东",
+      "B、周恩来",
+      "C、王若飞",
+      "D、刘少奇"
+    ],
+    answer: [1]
+  },
+  {
+    question: "16、抗日战争胜利后，第三条道路的主张是（   ）",
+    options: [
+      "A、在政治上“必须实现英美式的民主政治”",
+      "B、在经济上，“应当实行改良的资本主义”",
+      "C、在方法上，走和平改良的道路",
+      "D、在思想上，信仰基督教"
+    ],
+    answer: [0,1,2]
+  },
+  {
+    question: "17、中国革命胜利的基本经验是（    ）",
+    options: [
+      "A、建立广泛的统一战线",
+      "B、坚持革命的武装斗争",
+      "C、加强共产党自身的建设",
+      "D、支持世界人民的革命斗争"
+    ],
+    answer: [0,1,2]
+  },
+  {
+    question: "18、1949年，中国人民政治协商会议选举出第一届中央人民政府委员会，下列领导人中，担任中央人民政府副主席的有（    ）",
+    options: [
+      "A、宋庆龄",
+      "B、李济深",
+      "C、张澜",
+      "D、黄炎培"
+    ],
+    answer: [0,1,2,3]
+  },
+  {
+    question: "19、中国新民主主义革命胜利的主要原因是（     ）。",
+    options: [
+      "A、中国共产党的正确领导",
+      "B、广大人民群众的广泛参加和大力支持",
+      "C、各民主党派和无党派民主人士、各少数民族、爱国的知识分子和华侨的积极参与",
+      "D、国际无产阶级和人民群众的援助"
+    ],
+    answer: [0,1,2,3]
+  },
+  {
+    question: "20、中国的武装斗争，实质上是无产阶级领导的农民革命战争，其原因在于（  ）",
+    options: [
+      "A、农民占中国人口的绝大多数，是中国军队的主要来源",
+      "B、农民是反帝反封建的主力军",
+      "C、中国革命的基本问题是农民问题",
+      "D、革命的中心任务和最高形式是武装夺取政权"
+    ],
+    answer: [0,1,2,3]
+  },
+  {
+    question: "21、解放战争时期，在国民党统治区形成了配合人民解放战争的第二条战线，下列关于第二条战线的表述正确的是（     ）",
+    options: [
+      "A、有力地配合了人民解放军正面作战",
+      "B、是以学生运动为先导的包括各阶层民众在内的人民民主运动",
+      "C、加速了第三条道路主张的破灭",
+      "D、沉重打击了国民党的反动统治，加速了人民大革命新高潮的到来"
+    ],
+    answer: [0,1,3]
+  }
+];
+
+const judgeQuiz = [
+  {
+    question: "1、1946年5月4日，中共中央发出《五四指示》，决定将党在抗日战争时期实行的减租减息政策改变为实现“耕者有其田”的政策。(     )",
+    answer: false
+  },
+  {
+    question: "2、解放战争时期，在解放区进行的土地制度改革，从根本上摧毁中国封建制度根基，为打败蒋介石、建立新中国奠定了深厚的群众基础。(     )",
+    answer: true
+  },
+  {
+    question: "3、在国民党统治区，以工人运动为先导的人民民主运动迅速地发展起来，成为配合人民解放战争的第二条战线。(     )",
+    answer: false
+  },
+  {
+    question: "4、中国各民主党派的政纲不尽相同，但都主张爱国、反对卖国，主张民主、反对独裁(    )",
+    answer: true
+  },
+  {
+    question: "5、1945年蒋介石表示愿意与中共进行和平谈判目的是掩盖其正在进行的内战准备。(   )",
+    answer: true
+  },
+  {
+    question: "6、1945年蒋介石表示愿意与中共进行和平谈判的目的是诱使中共交出军队和政权。(    )",
+    answer: true
+  },
+  {
+    question: "7、美国政府声称“不支持中国中央政府进行内战”，实际上是支持国民党的反共方针的 。(     )",
+    answer: true
+  },
+  {
+    question: "8、解放战争时期中共中央在解放军数量上占有优势后决定举行全国性反攻。(    )",
+    answer: false
+  },
+  {
+    question: "9、国民党政府由于它的专制独裁和官员们的贪污腐败，大发国难财，抗战后期在大后方便已严重丧失人心。(    )",
+    answer: true
+  },
+  {
+    question: "10、以武力消灭共产党及其领导的人民军队和解放区政权，不是蒋介石集团的既定方针。(     )",
+    answer: false
+  },
+  {
+    question: "11、1945年8月25日，中共中央在对时局的宣言中明确提出“和平、民主、团结”的口号。(     )",
+    answer: true
+  },
+  {
+    question: "12、1945年8月25日，中共中央在对时局的宣言中明确提出“自由、民主、团结”的口号。(    )",
+    answer: false
+  },
+  {
+    question: "13、解放战争时期，中国共产党在解放区实行的土地政策是减租减息政策。(  )",
+    answer: false
+  },
+  {
+    question: "14、解放战争时期，中国共产党在解放区实行的土地政策是“耕者有其田”政策。(     )",
+    answer: true
+  },
+  {
+    question: "15、解放战争时期，在国民党统治区，以学生运动为先导的人民民主运动迅速的发展起来，成为配合人民解放战争的第二条战线。(    )",
+    answer: true
+  },
+  {
+    question: "16、抗日战争胜利后，民主党派就确立了新民主主义革命的立场。(    )",
+    answer: false
+  },
+  {
+    question: "17、抗日战争胜利后，某些民主党派的领导人曾经鼓吹”中间路线“。(   )",
+    answer: true
+  },
+  {
+    question: "18、解放战争时期，国民党当局不仅极度仇视中国共产党，而且对民主党派、民主人士也充满敌意。(     )",
+    answer: true
+  },
+  {
+    question: "19、解放战争时期，国民党当局只与中国共产党为敌，对民主党派和民主人士采取友好、合作的态度。(    )",
+    answer: false
+  },
+  {
+    question: "20、1948年1月，民盟一届三中全会召开，标志着民盟站到了新民主主义革命的立场上来。(    )",
+    answer: true
+  },
+  {
+    question: "21、中国共产党在中国革命中战胜敌人的三大法宝是统一战线、武装斗争和党的建设。(     )",
+    answer: true
+  },
+  {
+    question: "22、1947年6月底，根据中共中央的决策和部署，刘伯承、邓小平率领的晋冀鲁豫野战军主力，实施中央突破，千里跃进大别山。(   )",
+    answer: true
+  },
+  {
+    question: "23、抗日战争后的政治形势，总的说来，是不利于中国人民实现和平建国的。(   )",
+    answer: true
+  },
+  {
+    question: "24、1949年，完成创建新中国的任务，是由中国人民政治协商会议来承担的。(     )",
+    answer: false
+  }
+];
+
+
+
+  let currentType = 'single'; // 'single', 'multi', 'judge'
+  let current = 0;
+  let multiSelected = []; // 多选题已选项
+
+  function renderQuestion() {
+    let q;
+    if (currentType === 'single') {
+      q = quiz[current];
+    } else if (currentType === 'multi') {
+      q = multiQuiz[current];
+    } else if (currentType === 'judge') {
+      q = judgeQuiz[current];
+    }
+
+    document.getElementById("question").innerText = q.question;
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    if (currentType === 'judge') {
+      ["正确", "错误"].forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkJudgeAnswer(index === 0, div);
+        optionsDiv.appendChild(div);
+      });
+    } else if (currentType === 'multi') {
+      multiSelected = [];
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => toggleMultiSelect(div, index);
+        optionsDiv.appendChild(div);
+      });
+      // 添加放大且居中的提交按钮
+      const submitBtn = document.createElement("button");
+      submitBtn.innerText = "提交";
+      submitBtn.className = "multi-submit-btn";
+      submitBtn.onclick = checkMultiAnswer;
+      optionsDiv.appendChild(submitBtn);
+    } else {
+      // 单选
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkAnswer(index, div);
+        optionsDiv.appendChild(div);
+      });
+    }
+  }
+
+  function toggleMultiSelect(div, index) {
+    if (multiSelected.includes(index)) {
+      multiSelected = multiSelected.filter(i => i !== index);
+      div.classList.remove("selected");
+    } else {
+      multiSelected.push(index);
+      div.classList.add("selected");
+    }
+  }
+
+  function checkMultiAnswer() {
+    const correct = multiQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      // 提交后，所有正确选项变绿，其他不变色
+      if (correct.includes(i)) {
+        opt.classList.add("correct");
+      }
+      opt.classList.remove("selected");
+    });
+    // 禁用提交按钮
+    const btn = document.querySelector(".multi-submit-btn");
+    if (btn) btn.disabled = true;
+  }
+
+  function checkAnswer(index, el) {
+    let correct = quiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if (i === correct) opt.classList.add("correct");
+      else if (i === index) opt.classList.add("wrong");
+    });
+  }
+
+  function checkJudgeAnswer(isTrue, el) {
+    let correct = judgeQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if ((i === 0 && correct) || (i === 1 && !correct)) {
+        opt.classList.add("correct");
+      } else if ((i === 0 && !correct && isTrue) || (i === 1 && correct && !isTrue)) {
+        opt.classList.add("wrong");
+      }
+    });
+  }
+
+  function showAnswer() {
+    if (currentType === 'single') {
+      const correctIndex = quiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (i === correctIndex) opt.classList.add("correct");
+      });
+    } else if (currentType === 'multi') {
+      const correct = multiQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (correct.includes(i)) opt.classList.add("correct");
+      });
+      const btn = document.querySelector("#options button");
+      if (btn) btn.disabled = true;
+    } else if (currentType === 'judge') {
+      let correct = judgeQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if ((i === 0 && correct) || (i === 1 && !correct)) {
+          opt.classList.add("correct");
+        }
+      });
+    }
+  }
+
+  function nextQuestion() {
+    if (currentType === 'single') {
+      if (current < quiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'multi';
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'multi') {
+      if (current < multiQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'judge';
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'judge') {
+      if (current < judgeQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      }
+    }
+  }
+
+  function prevQuestion() {
+    if (current > 0) {
+      current--;
+      renderQuestion();
+    } else if (currentType === 'multi') {
+      currentType = 'single';
+      current = quiz.length - 1;
+      renderQuestion();
+    } else if (currentType === 'judge') {
+      currentType = 'multi';
+      current = multiQuiz.length - 1;
+      renderQuestion();
+    }
+  }
+
+  renderQuestion();
+</script>
+
+</body>
+</html>

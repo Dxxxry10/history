@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>近现代史刚要第三章</title>
+  <style>
+    body { font-family: sans-serif; }
+    .modal {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: white; padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      width: 400px; border-radius: 10px;
+    }
+    .option {
+      margin: 8px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s, color 0.2s;
+      text-align: left;
+    }
+    .option.selected {
+      background-color: #444 !important;
+      color: #fff !important;
+      border-color: #444 !important;
+    }
+    .option.correct {
+      background-color: #43a047 !important;
+      color: #fff !important;
+      border-color: #43a047 !important;
+    }
+    .option.wrong {
+      background-color: #ffcaca;
+    }
+    .buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .multi-submit-btn {
+      display: block;
+      margin: 32px auto 0 auto;
+      background: linear-gradient(to right, #4a00e0, #8e2de2);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 15px;
+      font-size: 0.7rem;
+      font-weight: 300;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(142, 45, 226, 0.2);
+    }
+    .multi-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<div class="modal" id="quizModal">
+  <div id="question"></div>
+  <div id="options"></div>
+  <div class="buttons">
+    <button onclick="prevQuestion()">上一题</button>
+    <button onclick="showAnswer()">不会</button>
+    <button onclick="nextQuestion()">下一题</button>
+  </div>
+</div>
+
+<script>
+
+const quiz = [
+  {
+    question: "1、中国资产阶级革命派与改良派的根本不同之处是（　   ）",
+    options: [
+      "A、是否反对帝国主义",
+      "B、是否以暴力手段推翻清王朝统治",
+      "C、是否推翻帝制，实行共和",
+      "D、是否实行土地国有"
+    ],
+    answer: 1  // B
+  },
+  {
+    question: "2、中国近代第一个资产阶级革命政党是(     )",
+    options: [
+      "A、强学会",
+      "B、兴中会",
+      "C、中国同盟会",
+      "D、国民党"
+    ],
+    answer: 2  // C
+  },
+  {
+    question: "3、中国第一个资产阶级革命组织是(   )",
+    options: [
+      "A、兴中会",
+      "B、国民党",
+      "C、中国同盟会",
+      "D、华兴会"
+    ],
+    answer: 0  // A
+  },
+  {
+    question: "4、辛亥革命的性质是：（    ）",
+    options: [
+      "A、无产阶级社会主义革命",
+      "B、旧式的资产阶级民主主义革命",
+      "C、新式的资产阶级民主主义革命",
+      "D、资产阶级维新运动"
+    ],
+    answer: 1  // B
+  },
+  {
+    question: "5、辛亥革命失败的根本原因(      )",
+    options: [
+      "A、资产阶级革命派本身存在着许多弱点和错误",
+      "B、没有提出彻底的反帝反封建的革命纲领",
+      "C、资产阶级共和国方案在中国行不通",
+      "D、不能建立坚强的革命政党"
+    ],
+    answer: 2  // C
+  },
+  {
+    question: "6、中国历史上第一部具有资产阶级共和国宪法性质的法典是（    ）",
+    options: [
+      "A、《钦定宪法大纲》",
+      "B、《中华民国临时约法》",
+      "C、《中华民国约法》",
+      "D、《训政纲领》"
+    ],
+    answer: 1  // B
+  },
+  {
+    question: "7、1905年11月，孙中山在《民报》发刊词中将中国同盟会的政治纲领概括为（   ）",
+    options: [
+      "A、创立民国、平均地权",
+      "B、驱除鞑虏、恢复中华、创立合众政府",
+      "C、民族主义、民权主义、民生主义",
+      "D、联俄、联共、扶助农工"
+    ],
+    answer: 2  // C
+  },
+  {
+    question: "8、提出\"驱除鞑虏，恢复中华，建立民国，平均地权\"的政治纲领的是（  ）",
+    options: [
+      "A、兴中会",
+      "B、华兴会",
+      "C、光复会",
+      "D、中国同盟会"
+    ],
+    answer: 3  // D
+  },
+  {
+    question: "9、中国同盟会的成立，标志着中国资产阶级民主革命进入了一个新阶段。这里的\"新阶段\"主要是指（    ）",
+    options: [
+      "A、资产阶级革命派开始正式形成",
+      "B、开始与保皇派展开激烈论战",
+      "C、革命派开始积极发动武装起义",
+      "D、革命有了统一的领导和纲领"
+    ],
+    answer: 3  // D
+  },
+  {
+    question: "10、武昌起义爆发后，控制大部分地方政权的是（    ）",
+    options: [
+      "A、革命党人",
+      "B、北洋军阀和旧官僚",
+      "C、袁世凯的亲信",
+      "D、立宪派和旧官僚"
+    ],
+    answer: 3  // D
+  },
+  {
+    question: "11、在1840年至1919年期间，比较完全意义上的资产阶级民主革命是（   ）",
+    options: [
+      "A、辛亥革命",
+      "B、戊戌维新运动",
+      "C、太平天国革命",
+      "D、义和团运动"
+    ],
+    answer: 0  // A
+  },
+  {
+    question: "12、为反对袁世凯刺杀宋教仁和\"善后大借款\"，孙中山在1913年领导革命党人发动了（  ）",
+    options: [
+      "A、二次革命",
+      "B、护国战争",
+      "C、护法战争",
+      "D、北伐战争"
+    ],
+    answer: 0  // A
+  },
+  {
+    question: "13、1911年4月，资产阶级革命派在黄兴带领下举行了(     )",
+    options: [
+      "A、惠州起义",
+      "B、黄花岗起义",
+      "C、护国战争",
+      "D、护法战争"
+    ],
+    answer: 1  // B
+  },
+  {
+    question: "14、民权主义是孙中山提出的三民主义的核心，其基本内容是（  ）",
+    options: [
+      "A、实行社会革命",
+      "B、打倒帝国主义",
+      "C、核定地价",
+      "D、推翻封建君主专制制度，建立资产阶级的民主共和国"
+    ],
+    answer: 3  // D
+  },
+  {
+    question: "15、1913年，\"二次革命\"的导火线是（    ）",
+    options: [
+      "A、宋教仁被刺",
+      "B、段祺瑞拒绝恢复《临时约法》",
+      "C、袁世凯称帝",
+      "D、张勋复辟闹剧"
+    ],
+    answer: 0  // A
+  },
+  {
+    question: "16、孙中山说“斯役之价值，直可惊天地，泣鬼神，与武昌之役并寿”，所指战役是（　 ）",
+    options: [
+      "A、黄花岗起义",
+      "B、惠州起义",
+      "C、镇南关起义",
+      "D、钦州起义"
+    ],
+    answer: 0  // A
+  },
+  {
+    question: "17、1911年10月10日，发动湖北新军在武昌举行起义的革命团体是（   ）",
+    options: [
+      "A、共进会和华兴会",
+      "B、共进会和文学社",
+      "C、华兴会和光复会",
+      "D、光复会和文学会"
+    ],
+    answer: 1  // B
+  },
+  {
+    question: "18、中国延续了两千多年的封建帝制覆灭的标志是（    ）",
+    options: [
+      "A、1912年2月12日清帝退位",
+      "B、1911年10月10日武昌起义",
+      "C、袁世凯担任临时大总统",
+      "D、湖北军政府成立"
+    ],
+    answer: 0  // A
+  },
+  {
+    question: "19、民国初年，两次帝制复辟均以失败告终的共同原因是（     ）",
+    options: [
+      "A、资产阶级力量强大",
+      "B、西方列强的干涉",
+      "C、北洋军阀内部矛盾激化",
+      "D、辛亥革命后民主共和的观念深入人心"
+    ],
+    answer: 3  // D
+  },
+  {
+    question: "20、辛亥革命的中坚力量是(     )",
+    options: [
+      "A、资产阶级工商业者",
+      "B、华侨",
+      "C、会党",
+      "D、以留学生为骨干的青年知识分子"
+    ],
+    answer: 3  // D
+  },
+  {
+    question: "21、“中国现存的各政党，只有国民党是比较革命的民主派，比较是真的民主派”这一论断的主要依据是（    ）",
+    options: [
+      "A、孙中山领导的国民党进行了不屈不挠的反封建斗争",
+      "B、孙中山代表各阶级、各阶层的利益",
+      "C、国民党在广东建立了革命根据地和军队",
+      "D、国民党代表民族资产阶级和小资产阶级的利益"
+    ],
+    answer: 0  // A
+  },
+  {
+    question: "22、20世纪中国的第一次历史性巨变是（     ）。",
+    options: [
+      "A、太平天国革命",
+      "B、义和团运动",
+      "C、戊戌变法",
+      "D、辛亥革命"
+    ],
+    answer: 3  // D
+  },
+  {
+    question: "23、中国同盟会的机关报是(     )",
+    options: [
+      "A、时务报",
+      "B、新民丛报",
+      "C、民报",
+      "D、万国公报"
+    ],
+    answer: 2  // C
+  },
+  {
+    question: "24、组织“护国军”，发起护国运动的人是（    ）",
+    options: [
+      "A、孙中山",
+      "B、黄兴",
+      "C、蔡锷",
+      "D、宋教仁"
+    ],
+    answer: 2  // C
+  },
+  {
+    question: "25、中国共产党完成孙中山的未竟事业，这主要表现在（   ）",
+    options: [
+      "A、完成了反帝反封建的历史任务",
+      "B、建立了人民民主专政的国家政权",
+      "C、实现了平均地权，把土地分给了广大农民",
+      "D、没收了官僚资本，建立了公有制"
+    ],
+    answer: 0  // A
+  },
+  {
+    question: "26、说辛亥革命失败了，主要是因为 （     ）",
+    options: [
+      "A、它没有废除清帝的尊号和皇室的特权",
+      "B、它没有推翻袁世凯的军阀统治",
+      "C、它没有完成反帝反封建的历史任务",
+      "D、它没有使中国成为资本主义强国"
+    ],
+    answer: 2  // C
+  },
+  {
+    question: "27、南京临时政府成立后，承认清政府与列强签订的一切不平等条约，其目的是（   ）",
+    options: [
+      "A、打破列强的外交封锁",
+      "B、换取列强的支持",
+      "C、尽快稳定国内政局",
+      "D、争取列强严守中立"
+    ],
+    answer: 1  // B
+  },
+  {
+    question: "28、日本胁迫袁世凯接受“二十一条”，受到中国人民的坚决反对。日本要求：“延长旅顺、大连及南满铁路、安奉铁路的期限为99年，并承认日本在东三省南部及内蒙古东部的特殊权利”，其主要目标是（    ）",
+    options: [
+      "A、强化在朝鲜半岛的殖民统治",
+      "B、加强对俄国的军事力量",
+      "C、吞并东北，并作为扩大侵华战争的基地",
+      "D、建立伪满洲国"
+    ],
+    answer: 2  // C
+  },
+  {
+    question: "29、革命派与改良派展开的大论战，这场论战的焦点是：（   ）",
+    options: [
+      "A、要不要以革命手段推翻清王朝",
+      "B、要不要进行社会革命",
+      "C、要不要兴民权、设议院",
+      "D、要不要推翻帝制，实行共和"
+    ],
+    answer: 0  // A
+  },
+  {
+    question: "30、戊戌变法与辛亥革命的不同之处是 （    ）",
+    options: [
+      "A、由中国民族资产阶级领导和发动",
+      "B、没有改变中国的政体",
+      "C、以挽救民族危机、发展资本主义为目的",
+      "D、没有改变中国的社会性质"
+    ],
+    answer: 1  // B
+  },
+  {
+    question: "31、辛亥革命取得的最大功绩是（    ）",
+    options: [
+      "A、推翻了封建帝制",
+      "B、促进了资本主义的发展",
+      "C、使人民获得了一些民主自由权利",
+      "D、打击了帝国主义的殖民势力"
+    ],
+    answer: 0  // A
+  },
+  {
+    question: "32、戊戌变法是中国民族资产阶级登上政治舞台的第一次表演，辛亥革命则开创了完全意义上的近代民族民主革命。两者的共同点（    ）",
+    options: [
+      "A、都主张改革君主专制制度",
+      "B、都是自下而上的救亡运动",
+      "C、都主张在中国发展资本主义",
+      "D、都提出了明确的反帝反封建的纲领"
+    ],
+    answer: 2  // C
+  },
+  {
+    question: "33、清政府于1901年宣布实行“新政”以后，又于1906年宣布“预备仿行宪政”，于1908年颁布《钦定宪法大纲》，制定了预备立宪期为9年的君主立宪方案。清政府改革的根本目的在于（    ）",
+    options: [
+      "A、延续清王朝的反动统治",
+      "B、发展资本主义",
+      "C、缓和阶级矛盾",
+      "D、挽救民族危机"
+    ],
+    answer: 0  // A
+  }
+];
+
+const multiQuiz = [
+  {
+    question: "1、辛亥革命是我国近代史上一次比较完全意义上的资产阶级民主革命，这是因为辛亥革命（    ）",
+    options: [
+      "A、提出了耕者有其田的重要原则",
+      "B、建立了中国近代史上第一个资产阶级政党",
+      "C、制定了比较完整的资产阶级民主革命纲领",
+      "D、结束了封建君主专制制度，建立了资产阶级共和国"
+    ],
+    answer: [1, 2, 3] // B,C,D
+  },
+  {
+    question: "2、1912年3月中华民国临时参议院颁布的《中华民国临时约法》是中国历史上第一部具有资产阶级共和国宪法性质的法典。毛泽东曾称赞它“带有革命性、民主性”。其“革命性、民主性”主要体现在（     ）",
+    options: [
+      "A、它规定中华民国国民一律平等",
+      "B、它规定中华民国之主权属于国民全体",
+      "C、它以根本大法的形式废除了封建君主专制制度",
+      "D、它不承认清政府与列强签订的一切不平等条约"
+    ],
+    answer: [0, 1, 2] // A,B,C
+  },
+  {
+    question: "3、辛亥革命之所以失败，从主观方面来说，在于它的领导者资产阶级革命派本身存在着许多弱点和错误。主要是：（      ）",
+    options: [
+      "A、没有提出彻底的反帝反封建革命纲领",
+      "B、不能充分发动和依靠人民群众",
+      "C、不能建立坚强的革命政党",
+      "D、没有一个具有坚定革命性的领袖"
+    ],
+    answer: [0, 1, 2] // A,B,C
+  },
+  {
+    question: "4、1911年，直接参与领导武昌起义的革命组织是（     ）",
+    options: [
+      "A、共进会",
+      "B、文学社",
+      "C、中华革命党",
+      "D、中国国民党"
+    ],
+    answer: [0, 1] // A,B
+  },
+  {
+    question: "5、关于辛亥革命历史功绩的叙述，正确的是（     ）",
+    options: [
+      "A、推翻了清朝的统治",
+      "B、建立了亚洲第一个资产阶级共和国",
+      "C、使民主共和观念深入人心",
+      "D、为民族资本主义的发展创造了一定的条件"
+    ],
+    answer: [0, 1, 2, 3] // A,B,C,D
+  },
+  {
+    question: "6、辛亥革命取得的成果是（      ）",
+    options: [
+      "A、结束了中国两千年的封建君主专制制度，推翻了清王朝的统治",
+      "B、建立起了资产阶级共和国",
+      "C、颁布了具有资产阶级共和国宪法性质的《中华民国临时约法》",
+      "D、完成了资产阶级革命的任务，改变了中国半殖民地半封建社会的性质"
+    ],
+    answer: [0, 1, 2] // A,B,C
+  },
+  {
+    question: "7、在近代中国半殖民地半封建社会，资产阶级共和国的方案之所以行不通的原因是（       ）",
+    options: [
+      "A、资产阶级力量过于软弱",
+      "B、资产阶级没有勇气和能力去领导人民进行彻底的反帝反封建革命斗争",
+      "C、资产阶级提不出彻底的土地革命的纲领",
+      "D、资产阶级没有革命指导思想"
+    ],
+    answer: [0, 1, 2] // A,B,C
+  },
+  {
+    question: "8、在宣传民主革命思想的过程中，著名的资产阶级革命派知识分子有 (   ）",
+    options: [
+      "A、章炳麟",
+      "B、邹容",
+      "C、陈天华",
+      "D、康有为"
+    ],
+    answer: [0, 1, 2] // A,B,C
+  },
+  {
+    question: "9、资产阶级是近代中国新诞生的阶级，主要来自 (    )",
+    options: [
+      "A、地主",
+      "B、商人",
+      "C、买办",
+      "D、官僚"
+    ],
+    answer: [0, 1, 2, 3] // A,B,C,D
+  },
+  {
+    question: "10、中国民族资本主义经济的发展，受到了多方面的阻碍。其阻碍主要来自（  ）",
+    options: [
+      "A、外国资本的压迫",
+      "B、官僚资本的排挤",
+      "C、军阀官僚政府的压榨",
+      "D、封建生产关系的束缚"
+    ],
+    answer: [0, 1, 2, 3] // A,B,C,D
+  },
+  {
+    question: "11、1905年11月，孙中山在《民报》发刊词中阐发的三民主义是指（    ）",
+    options: [
+      "A、民族主义",
+      "B、民权主义",
+      "C、民本主义",
+      "D、民生主义"
+    ],
+    answer: [0, 1, 3] // A,B,D
+  },
+  {
+    question: "12、1913年至1922年间，资产阶级革命派为捍卫辛亥革命成果进行的斗争有（  ）",
+    options: [
+      "A、“二次革命”",
+      "B、护国战争",
+      "C、第一次护法运动",
+      "D、第二次护法运动"
+    ],
+    answer: [0, 1, 2, 3] // A,B,C,D
+  },
+  {
+    question: "13、南京临时政府的局限性表现为（    ）",
+    options: [
+      "A、承认清政府与列强所订的一切不平等条约和一切外债有效",
+      "B、没有提出任何可以满足农民土地要求的政策和措施",
+      "C、维护封建土地制度以及官僚、地主所占有的土地财产",
+      "D、主体是地主阶级改革派"
+    ],
+    answer: [0, 1, 2] // A,B,C
+  },
+  {
+    question: "14、1894年，孙中山在檀香山建立兴中会，提出纲领（    ）",
+    options: [
+      "A、驱除鞑虏",
+      "B、创立合众政府",
+      "C、恢复中国",
+      "D、振兴中华"
+    ],
+    answer: [0, 1] // A,B
+  },
+  {
+    question: "15、1924年1月，中国国民党第一次全国代表大会召开，孙中山确立的三大政策是（  ）",
+    options: [
+      "A、联俄",
+      "B、扶助农工",
+      "C、联共",
+      "D、恢复中国"
+    ],
+    answer: [0, 1, 2] // A,B,C
+  },
+  {
+    question: "16、南京临时政府是一个资产阶级共和国性质的革命政权，其原因是（  ）",
+    options: [
+      "A、资产阶级革命派在这个政权中占有领导和主体的地位",
+      "B、临时参议院中，同盟会会员占多数",
+      "C、各项政策措施集中代表了中国民族资产阶级的利益",
+      "D、各项政策在相当程度上也符合广大中国人民的利益"
+    ],
+    answer: [0, 1, 2, 3] // A,B,C,D
+  },
+  {
+    question: "17、1912年2月13日, 孙中山向参议院提出辞职咨文时所附加的条件是（）",
+    options: [
+      "A、南京为首都",
+      "B、总统在南京就职",
+      "C、总统要遵守临时约法",
+      "D、中华民国国民一律平等"
+    ],
+    answer: [0, 1, 2] // A,B,C
+  },
+  {
+    question: "18、辛亥革命的历史局限性主要是（   ）",
+    options: [
+      "A、没有提出彻底反帝反封建的革命纲领",
+      "B、没有坚持长期的武装斗争",
+      "C、没有充分发动和依靠民众",
+      "D、没有建立坚强的革命政党及其领导核心"
+    ],
+    answer: [0, 2, 3] // A,C,D
+  },
+  {
+    question: "19、中国资产阶级革命派与改良派的根本不同之处在于，资产阶级革命派（   ）",
+    options: [
+      "A、在踏上革命道路之时就高举起民主革命的旗帜",
+      "B、最先制定了明确的反帝反封建的革命纲领",
+      "C、选择了以武装起义推翻清王朝统治的斗争方式",
+      "D、始终重视广泛动员人民群众的力量"
+    ],
+    answer: [0, 2] // A,C
+  },
+  {
+    question: "20、《中华民国临时约法》是中国第一部资产阶级民主宪法，它规定（   ）",
+    options: [
+      "A、中华民国的主权属于国民全体",
+      "B、中华民国国民一律平等",
+      "C、中华民国国民享有人身、财产、集会、结社、出版、言论等自由",
+      "D、分设行政、司法、立法机关"
+    ],
+    answer: [0, 1, 2, 3] // A,B,C,D
+  },
+  {
+    question: "21、1956年，毛泽东在《纪念孙中山先生》一文中指出，纪念伟大的革命先行者孙中山先生，“纪念他在辛亥革命时期，领导人民推翻帝制、建立共和国的丰功伟绩。”辛亥革命是（   ）",
+    options: [
+      "A、资产阶级领导的以反对君主专制制度、建立资产阶级共和国为目的的革命",
+      "B、中国民族资产阶级登上政治舞台的第一次表演",
+      "C、中国人民为救亡图存、振兴中华而奋起革命的一个里程碑",
+      "D、一次比较完全意义上的资产阶级民主革命"
+    ],
+    answer: [0, 2, 3] // A,C,D
+  },
+  {
+    question: "22、由于历史进程和社会条件的制约，辛亥革命没有改变旧中国半殖民地半封建的社会性质，没有完成实现民族独立、人民解放的历史任务。但是，辛亥革命以巨大的震撼力和影响力推动了中国社会变革（   ）",
+    options: [
+      "A、开创了完全意义上的近代民族民主革命",
+      "B、打开了中国进步的闸门，传播了民主共和理念",
+      "C、极大推动了中华民族思想解放",
+      "D、改变了中国人民的悲惨命运"
+    ],
+    answer: [0, 1, 2] // A,B,C
+  },
+  {
+    question: "23、毛泽东指出，辛亥革命“有它胜利的地方，也有它失败的地方。你们看，辛亥革命把皇帝赶跑，这不是胜利了吗？”说它失败主要是（  ）",
+    options: [
+      "A、近代中国社会的主要矛盾没有解决",
+      "B、中国半殖民地半封建的社会性质和人民的悲惨境遇没有改变",
+      "C、反帝反封建的革命任务没有完成",
+      "D、社会经济、思想习惯和社会风俗没有发生变化"
+    ],
+    answer: [0, 1, 2] // A,B,C
+  },
+  {
+    question: "24、袁世凯窃夺辛亥革命的果实之后，建立了北洋军阀的反动政权，这个政权（    ）",
+    options: [
+      "A、政治上实行军阀官僚的专制统治",
+      "B、经济上竭力维护帝国主义、地主阶级和买办资产阶级的利益",
+      "C、文化思想上尊孔复古",
+      "D、代表大地主和买办资产阶级利益"
+    ],
+    answer: [0, 1, 2, 3] // A,B,C,D
+  }
+];
+
+const judgeQuiz = [
+  {
+    question: "1、辛亥革命是比较完全意义上的资产阶级民主革命",
+    answer: true
+  },
+  {
+    question: "2、袁世凯窃夺辛亥革命的果实之后，建立了代表大地主和买办资产阶级利益的北洋军阀反动政权。",
+    answer: true
+  },
+  {
+    question: "3、中国民族资产阶级第一次提出了反帝反封建的民主革命的纲领，为中国人民指出了明确的斗争目标。",
+    answer: false
+  },
+  {
+    question: "4、兴中会是中国第一个全国性的资产阶级革命政党。",
+    answer: false
+  },
+  {
+    question: "5、中国同盟会是中国第一个全国性的资产阶级革命政党。",
+    answer: true
+  },
+  {
+    question: "6、兴中会是中国第一个资产阶级革命团体。",
+    answer: true
+  },
+  {
+    question: "7、辛亥革命首义是广州黄花岗起义",
+    answer: false
+  },
+  {
+    question: "8、1912年颁布的《中华民国临时约法》是中国历史上第一部具有资产阶级共和国宪法性质的法典。",
+    answer: true
+  },
+  {
+    question: "9、辛亥革命的流产宣告了资产阶级共和国方案在中国行不通。",
+    answer: true
+  },
+  {
+    question: "10、辛亥革命在一定程度上打击了帝国主义的侵略势力。",
+    answer: true
+  },
+  {
+    question: "11、孙中山的“平均地权”主张，没有正面触及封建土地所有制。",
+    answer: true
+  },
+  {
+    question: "12、从根本上说，近代中国的革命是被外国侵略者和本国封建统治者逼迫出来的。",
+    answer: true
+  }
+];
+
+
+
+  let currentType = 'single'; // 'single', 'multi', 'judge'
+  let current = 0;
+  let multiSelected = []; // 多选题已选项
+
+  function renderQuestion() {
+    let q;
+    if (currentType === 'single') {
+      q = quiz[current];
+    } else if (currentType === 'multi') {
+      q = multiQuiz[current];
+    } else if (currentType === 'judge') {
+      q = judgeQuiz[current];
+    }
+
+    document.getElementById("question").innerText = q.question;
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    if (currentType === 'judge') {
+      ["正确", "错误"].forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkJudgeAnswer(index === 0, div);
+        optionsDiv.appendChild(div);
+      });
+    } else if (currentType === 'multi') {
+      multiSelected = [];
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => toggleMultiSelect(div, index);
+        optionsDiv.appendChild(div);
+      });
+      // 添加放大且居中的提交按钮
+      const submitBtn = document.createElement("button");
+      submitBtn.innerText = "提交";
+      submitBtn.className = "multi-submit-btn";
+      submitBtn.onclick = checkMultiAnswer;
+      optionsDiv.appendChild(submitBtn);
+    } else {
+      // 单选
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkAnswer(index, div);
+        optionsDiv.appendChild(div);
+      });
+    }
+  }
+
+  function toggleMultiSelect(div, index) {
+    if (multiSelected.includes(index)) {
+      multiSelected = multiSelected.filter(i => i !== index);
+      div.classList.remove("selected");
+    } else {
+      multiSelected.push(index);
+      div.classList.add("selected");
+    }
+  }
+
+  function checkMultiAnswer() {
+    const correct = multiQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      // 提交后，所有正确选项变绿，其他不变色
+      if (correct.includes(i)) {
+        opt.classList.add("correct");
+      }
+      opt.classList.remove("selected");
+    });
+    // 禁用提交按钮
+    const btn = document.querySelector(".multi-submit-btn");
+    if (btn) btn.disabled = true;
+  }
+
+  function checkAnswer(index, el) {
+    let correct = quiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if (i === correct) opt.classList.add("correct");
+      else if (i === index) opt.classList.add("wrong");
+    });
+  }
+
+  function checkJudgeAnswer(isTrue, el) {
+    let correct = judgeQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if ((i === 0 && correct) || (i === 1 && !correct)) {
+        opt.classList.add("correct");
+      } else if ((i === 0 && !correct && isTrue) || (i === 1 && correct && !isTrue)) {
+        opt.classList.add("wrong");
+      }
+    });
+  }
+
+  function showAnswer() {
+    if (currentType === 'single') {
+      const correctIndex = quiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (i === correctIndex) opt.classList.add("correct");
+      });
+    } else if (currentType === 'multi') {
+      const correct = multiQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (correct.includes(i)) opt.classList.add("correct");
+      });
+      const btn = document.querySelector("#options button");
+      if (btn) btn.disabled = true;
+    } else if (currentType === 'judge') {
+      let correct = judgeQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if ((i === 0 && correct) || (i === 1 && !correct)) {
+          opt.classList.add("correct");
+        }
+      });
+    }
+  }
+
+  function nextQuestion() {
+    if (currentType === 'single') {
+      if (current < quiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'multi';
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'multi') {
+      if (current < multiQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'judge';
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'judge') {
+      if (current < judgeQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      }
+    }
+  }
+
+  function prevQuestion() {
+    if (current > 0) {
+      current--;
+      renderQuestion();
+    } else if (currentType === 'multi') {
+      currentType = 'single';
+      current = quiz.length - 1;
+      renderQuestion();
+    } else if (currentType === 'judge') {
+      currentType = 'multi';
+      current = multiQuiz.length - 1;
+      renderQuestion();
+    }
+  }
+
+  renderQuestion();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>近现代史刚要第五章</title>
+  <style>
+    body { font-family: sans-serif; }
+    .modal {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: white; padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      width: 400px; border-radius: 10px;
+    }
+    .option {
+      margin: 8px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s, color 0.2s;
+      text-align: left;
+    }
+    .option.selected {
+      background-color: #444 !important;
+      color: #fff !important;
+      border-color: #444 !important;
+    }
+    .option.correct {
+      background-color: #43a047 !important;
+      color: #fff !important;
+      border-color: #43a047 !important;
+    }
+    .option.wrong {
+      background-color: #ffcaca;
+    }
+    .buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .multi-submit-btn {
+      display: block;
+      margin: 32px auto 0 auto;
+      background: linear-gradient(to right, #4a00e0, #8e2de2);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 15px;
+      font-size: 0.7rem;
+      font-weight: 300;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(142, 45, 226, 0.2);
+    }
+    .multi-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<div class="modal" id="quizModal">
+  <div id="question"></div>
+  <div id="options"></div>
+  <div class="buttons">
+    <button onclick="prevQuestion()">上一题</button>
+    <button onclick="showAnswer()">不会</button>
+    <button onclick="nextQuestion()">下一题</button>
+  </div>
+</div>
+
+<script>
+
+const quiz = [
+  {
+    question: "1. 国民党在全国范围内建立了自己的统治的标志是：",
+    options: ["A. 南京国民政府改组", "B. 宁、汉合流", "C. 张学良“东北易帜”", "D. 《训政纲领》的通过"],
+    answer: 2
+  },
+  {
+    question: "2. 中国共产党确定土地革命和武装反抗国民党反动派总方针的会议是：",
+    options: ["A. 中共五大", "B. 中共六大", "C. 八七会议", "D. 古田会议"],
+    answer: 2
+  },
+  {
+    question: "3. 遵义会议着力解决的问题是：",
+    options: ["A. 党的政治路线问题", "B. 红军的前进方向问题", "C. 当时具有决定意义的军事和组织问题", "D. 土地革命的政策问题"],
+    answer: 2
+  },
+  {
+    question: "4. 中国共产党独立领导革命战争、创建人民军队的伟大开端是：",
+    options: ["A. 广州起义", "B. 秋收起义", "C. 南昌起义", "D. 五卅运动"],
+    answer: 2
+  },
+  {
+    question: "5. 1931年，中华苏维埃第一次全国代表大会召开的地点是：",
+    options: ["A. 江西省吉安", "B. 江西省瑞金", "C. 江西省兴国", "D. 陕西省延安"],
+    answer: 1
+  },
+  {
+    question: "6. 革命根据地能在中国长期存在和发展的根本原因是：",
+    options: [
+      "A. 中国是一个政治、经济、文化皆发展不平衡的半殖民地半封建社会",
+      "B. 良好的群众基础和革命形势的继续向前发展",
+      "C. 相当力量正式红军的存在",
+      "D. 党的领导及其正确的政策"
+    ],
+    answer: 0
+  },
+  {
+    question: "7. 毛泽东提出“中国革命斗争的胜利要靠中国同志了解中国情况”的文章是：",
+    options: [
+      "A. 《中国的红色政权为什么能够存在?》",
+      "B. 《井冈山的斗争》",
+      "C. 《星星之火，可以燎原》",
+      "D. 《反对本本主义》"
+    ],
+    answer: 3
+  },
+  {
+    question: "8. 1927年国民党建立的统治是代表哪一阶级的专政和军事独裁统治？",
+    options: [
+      "A. 帝国主义在华利益",
+      "B. 中国资产阶级利益",
+      "C. 中国地主阶级利益",
+      "D. 中国地主阶级和买办性的大资产阶级利益"
+    ],
+    answer: 3
+  },
+  {
+    question: "9. 国共十年对峙时期，中共得到农民衷心拥护的原因是：",
+    options: ["A. 工作重心转移到农村", "B. 建立农村革命根据地", "C. 取得了反'围剿'的胜利", "D. 进行了土地革命"],
+    answer: 3
+  },
+  {
+    question: "10. 中共制定土地改革政策的根本出发点是：",
+    options: ["A. 不同时期的斗争策略", "B. 国内主要矛盾的变化", "C. 不同地区农民的状况", "D. 反对国民党斗争的需要"],
+    answer: 1
+  },
+  {
+    question: "11. 毛泽东在《反对本本主义》中提出的著名科学论断是：",
+    options: [
+      "A. 枪杆子里面出政权",
+      "B. 没有文化的军队是一支愚蠢的军队",
+      "C. 没有调查就没有发言权",
+      "D. 帝国主义和一切反动派都是纸老虎"
+    ],
+    answer: 2
+  },
+  {
+    question: "12. 毛泽东在八七会议上提出的著名论断是：",
+    options: [
+      "A. 枪杆子里面出政权",
+      "B. 没有文化的军队是一支愚蠢的军队",
+      "C. 没有调查就没有发言权",
+      "D. 帝国主义和一切反动派都是纸老虎"
+    ],
+    answer: 0
+  },
+  {
+    question: "13. 土地革命战争时期中国共产党最伟大的历史贡献是：",
+    options: [
+      "A. 发动、领导了著名的秋收起义",
+      "B. 开辟了农村包围城市、武装夺取政权的道路",
+      "C. 领导中国人民推翻了三座大山",
+      "D. 推动了抗日民族统一战线的建立"
+    ],
+    answer: 1
+  },
+  {
+    question: "14. 1927年中共在汉口召开的紧急会议是：",
+    options: ["A. 八七会议", "B. 古田会议", "C. 遵义会议", "D. 洛川会议"],
+    answer: 0
+  },
+  {
+    question: "15. 中共八七会议确定的方针是：",
+    options: ["A. 推翻北洋军阀黑暗统治", "B. 开辟农村革命根据地", "C. 开展土地革命和武装斗争", "D. 建立工农民主统一战线"],
+    answer: 2
+  },
+  {
+    question: "16. 毛泽东率领秋收起义部队创建的根据地是：",
+    options: ["A. 井冈山革命根据地", "B. 湘鄂西革命根据地", "C. 闽浙赣革命根据地", "D. 左右江革命根据地"],
+    answer: 0
+  },
+  {
+    question: "17. 党内屡次出现严重'左'倾教条主义错误的主要原因是：",
+    options: [
+      "A. 八七会议后党内浓厚的'左'倾情绪未清理",
+      "B. 共产国际错误干预",
+      "C. 不理解中国历史和革命特点",
+      "D. 没有将马列主义与中国实际正确结合"
+    ],
+    answer: 3
+  },
+  {
+    question: "18. 红军三大主力会师时，不包括哪一支？",
+    options: ["A. 红一方面军", "B. 红二方面军", "C. 红十五军团", "D. 红四方面军"],
+    answer: 2
+  },
+  {
+    question: "19. 中国革命的主要形式是：",
+    options: ["A. 议会斗争", "B. 群众斗争", "C. 地下斗争", "D. 武装斗争"],
+    answer: 3
+  },
+  {
+    question: "20. 1931年11月在江西瑞金召开的重要会议是：",
+    options: [
+      "A. 中共六届四中全会",
+      "B. 红四军第九次党代表大会",
+      "C. 中华苏维埃第一次全国代表大会",
+      "D. 中共六届六中全会"
+    ],
+    answer: 2
+  },
+  // ...（下略17道题，如需继续我可以立即补上）
+];
+quiz.push(
+  {
+    question: "21. 《中国的红色政权为什么能够存在？》是为了解释哪一问题而写的？",
+    options: [
+      "A. 红军是无敌的",
+      "B. 为什么城市不如农村革命力量强大",
+      "C. 井冈山根据地发生的革命斗争",
+      "D. 红色政权在白色政权包围下为什么能够长期存在"
+    ],
+    answer: 3
+  },
+  {
+    question: "22. 毛泽东指出“没有文化的军队是一支愚蠢的军队”是在：",
+    options: ["A. 《星星之火，可以燎原》", "B. 《井冈山的斗争》", "C. 《反对本本主义》", "D. 古田会议决议"],
+    answer: 3
+  },
+  {
+    question: "23. 毛泽东在古田会议上提出：",
+    options: [
+      "A. 没有调查就没有发言权",
+      "B. 枪杆子里面出政权",
+      "C. 红军是一个执行革命的政治任务的武装集团",
+      "D. 没有文化的军队是一支愚蠢的军队"
+    ],
+    answer: 2
+  },
+  {
+    question: "24. 下列不属于红军三大主力的是：",
+    options: ["A. 红一方面军", "B. 红二方面军", "C. 红三方面军", "D. 红四方面军"],
+    answer: 2
+  },
+  {
+    question: "25. 遵义会议确立了以谁为代表的新的中央领导？",
+    options: ["A. 毛泽东", "B. 张闻天", "C. 王稼祥", "D. 博古"],
+    answer: 0
+  },
+  {
+    question: "26. 下列对土地革命时期“左”倾错误的认识错误的是：",
+    options: [
+      "A. 把斗争的锋芒主要指向富农",
+      "B. 没收富农土地，打击中农",
+      "C. 完全照搬苏俄经验",
+      "D. 批判右倾，推动农村根据地发展"
+    ],
+    answer: 3
+  },
+  {
+    question: "27. 中共土地革命战争时期实行的土地政策是：",
+    options: ["A. 耕者有其田", "B. 发展资本主义", "C. 实行按人口分地", "D. 没收地主土地"],
+    answer: 3
+  },
+  {
+    question: "28. 国共十年对峙时期的主战场是：",
+    options: ["A. 城市", "B. 海外", "C. 工矿", "D. 农村"],
+    answer: 3
+  },
+  {
+    question: "29. 中国革命的根本问题是：",
+    options: [
+      "A. 政治问题",
+      "B. 经济问题",
+      "C. 军事问题",
+      "D. 农民问题"
+    ],
+    answer: 3
+  },
+  {
+    question: "30. 毛泽东在《中国的红色政权为什么能够存在》一文中指出：",
+    options: [
+      "A. 红军必须走群众路线",
+      "B. 中国有广大民众支持革命",
+      "C. 共产党是先进力量",
+      "D. 革命的根据地能长期存在"
+    ],
+    answer: 3
+  },
+  {
+    question: "31. 毛泽东首次系统论述农村包围城市道路的著作是：",
+    options: [
+      "A. 《井冈山的斗争》",
+      "B. 《中国的红色政权为什么能够存在》",
+      "C. 《星星之火，可以燎原》",
+      "D. 《反对本本主义》"
+    ],
+    answer: 2
+  },
+  {
+    question: "32. 土地革命时期党最早领导的农民武装起义是：",
+    options: ["A. 南昌起义", "B. 秋收起义", "C. 黄麻起义", "D. 广州起义"],
+    answer: 2
+  },
+  {
+    question: "33. 毛泽东提出“从群众中来，到群众中去”的文章是：",
+    options: ["A. 《反对本本主义》", "B. 《整顿党的作风》", "C. 《改造我们的学习》", "D. 《星星之火，可以燎原》"],
+    answer: 0
+  },
+  {
+    question: "34. 土地革命时期中共开展土地革命的核心问题是：",
+    options: ["A. 没收一切土地", "B. 平分土地", "C. 实现土地公有", "D. 没收地主土地"],
+    answer: 3
+  },
+  {
+    question: "35. 第一次明确提出“工农武装割据”思想的文章是：",
+    options: ["A. 《中国的红色政权为什么能够存在》", "B. 《井冈山的斗争》", "C. 《星星之火，可以燎原》", "D. 《反对本本主义》"],
+    answer: 1
+  },
+  {
+    question: "36. 井冈山根据地创建的时间是：",
+    options: ["A. 1927年", "B. 1928年", "C. 1929年", "D. 1930年"],
+    answer: 0
+  },
+  {
+    question: "37. 土地革命战争时期，中国共产党在革命根据地广泛实行的是：",
+    options: ["A. 土地公有", "B. 土地国有", "C. 私有制", "D. 地主经营制"],
+    answer: 2
+  }
+);
+
+
+
+const multiQuiz = [
+  {
+    question: "1、1931年1月至1935年1月，以王明为代表的“左”倾错误给中国革命带来严重危害，其主要错误有（   ）",
+    options: [
+      "A、提出坚决打击富农和“地主不分田，富农分坏田”的主张。",
+      "B、将反帝反封建与反资产阶级并列",
+      "C、集中力量攻打大城市",
+      "D、主张“一切经过统一战线”"
+    ],
+    answer: [0, 1, 2]
+  },
+  {
+    question: "2、1935年1月15日至17日，中共中央政治局在黔北重镇遵义召开了扩大会议（史称“遵义会议”），会议作出了一系列重大决定。以下关于“遵义会议”表述正确的是：（   ）",
+    options: [
+      "A、会议集中解决了当时具有决定意义的军事问题和组织问题",
+      "B、会议的一系列重大决策是在共产国际的指导下作出的",
+      "C、是党的历史上一次生死悠关的转折点",
+      "D、标志着中国共产党在政治上开始走向成熟"
+    ],
+    answer: [0, 2, 3]
+  },
+  {
+    question: "3、20世纪30年代前期、中期，中国共产党屡次出现严重的“左”倾错误，主要的原因在于(      )",
+    options: [
+      "A、八七会议以后党内一直存在着的浓厚的“左”倾情绪始终没有得到认真清理",
+      "B、不善于把马克思列宁主义和中国实际全面地、正确地结合起来",
+      "C、在党内斗争和组织问题上，推行宗派主义和“残酷斗争，无情打击”的方针",
+      "D、共产国际对中国共产党内部事务错误干预和瞎指挥"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "4、1927年8月7日，中共中央在汉口秘密召开紧急会议（即八七会议），这次会议的内容是(     )",
+    options: [
+      "A、坚决纠正了大革命后期陈独秀的右倾机会主义错误",
+      "B、确定了土地革命和武装反抗国民党的总方针",
+      "C、选出了以瞿秋白为书记的中央临时政治局",
+      "D、开始了从大革命失败到土地革命战争兴起的转折"
+    ],
+    answer: [0, 1, 3]
+  },
+  {
+    question: "5、红军长征铸就了伟大的长征精神，长征精神就是（   ）。",
+    options: [
+      "A、坚定革命的理想和信念，坚信正义事业必然胜利的精神、为了救国救民，不怕艰难险阻",
+      "B、不惜付出一切牺牲的精神、紧紧依靠人民群众，同人民群众生死相依、患难与共、艰苦奋斗的精神",
+      "C、坚持独立自主、实事求是，一切从实际出发的精神",
+      "D、顾全大局、严守纪律、紧密团结的精神"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "6、大革命失败后，中国共产党在1927年发动的三大著名起义是（    ）。",
+    options: [
+      "A、南昌起义",
+      "B、秋收起义",
+      "C、广州起义",
+      "D、百色起义"
+    ],
+    answer: [0, 1, 2]
+  },
+  {
+    question: "7、1936年10月，在甘肃会宁、静宁将台堡胜利会师的红军三大主力是（ ）。",
+    options: [
+      "A、红一方面军",
+      "B、红二方面军",
+      "C、红十五军团",
+      "D、红四方面军"
+    ],
+    answer: [0, 1, 3]
+  },
+  {
+    question: "8、1935年遵义会议后，中共中央成立的全权负责红军军事行动的新三人团的成员是（   ）。",
+    options: [
+      "A、毛泽东",
+      "B、周恩来",
+      "C、张闻天",
+      "D、王稼祥"
+    ],
+    answer: [0, 1, 2]
+  },
+  {
+    question: "9、1935年1月，中共中央政治局在贵州遵义召开了遵义会议，这次会议解决了当时最迫切的（    ）。",
+    options: [
+      "A、思想问题",
+      "B、军事问题",
+      "C、组织问题",
+      "D、政治问题"
+    ],
+    answer: [1, 2]
+  },
+  {
+    question: "10、1930年10月到1931年7月，红军连续粉碎敌人三次“围剿”的原因是（   ）",
+    options: [
+      "A、赣南、闽西根据地连成一片",
+      "B、土地革命在根据地的开展",
+      "C、贯彻了积极防御的方针",
+      "D、实行“诱敌深入”、“避敌主力、打其虚弱”等一整套战术"
+    ],
+    answer: [0, 2, 3]
+  },
+  {
+    question: "11、1927年7月大革命失败到1935年1月遵义会议召开之前，“左”倾错误先后三次在党中央的领导机关取得了统治地位，即（    ）",
+    options: [
+      "A、陈独秀的“左”倾机会主义",
+      "B、以王明为代表的“左”倾教条主义",
+      "C、以瞿秋白为代表的“左”倾盲动主义",
+      "D、以李立三为代表的“左”倾冒险主义"
+    ],
+    answer: [1, 2, 3]
+  },
+  {
+    question: "12、1930年5月，毛泽东在《反对本本主义》中提出和阐述的重要思想有（   ）",
+    options: [
+      "A、关心群众生活，注意工作方法",
+      "B、不做正确的调查同样没有发言权",
+      "C、没有调查，没有发言权",
+      "D、中国革命斗争的胜利要靠中国同志了解中国情况"
+    ],
+    answer: [1, 2, 3]
+  },
+  {
+    question: "13、毛泽东指出：“如果不帮助农民推翻封建地主阶级，就不能组成中国革命最强大的队伍而推翻帝国主义的统治。”其实质含义是（    ）",
+    options: [
+      "A、农民阶级反帝反封建态度最坚决",
+      "B、农民是中国革命最可靠的同盟军",
+      "C、农民阶级是中国革命的领导阶级",
+      "D、没有农民阶级参加，中国革命就不能取胜"
+    ],
+    answer: [0, 1, 4] // 注意此题应只有A、B、D三项，选项C不是正确选项；无第4项（index 4），故为 [0, 1, 3]
+  },
+  {
+    question: "14、井冈山革命根据地的创建有深远的意义，表现在 （   ）",
+    options: [
+      "A、点燃了“工农武装割据”的星星之火，为共产党领导的其他各地的起义武装",
+      "B、树立了榜样",
+      "C、开辟了在敌我力量悬殊的情况下共产党深入农村保持和发展力量的正确道路",
+      "D、动摇了国民党反动派的统治基础"
+    ],
+    answer: [0, 1, 2]
+  },
+  {
+    question: "15、农村包围城市、武装夺取政权这条革命新道路的开辟(     )",
+    options: [
+      "A、1927年以后中国革命发展的客观规律所要求的",
+      "B、依靠了党和人民的集体奋斗，凝聚了党和人民的集体智慧",
+      "C、毛泽东是其中的杰出代表",
+      "D、只是依靠了毛泽东个人的能力"
+    ],
+    answer: [0, 1, 2]
+  }
+];
+
+const judgeQuiz = [
+  {
+    question: "1、土地革命战争时期，党内出现了陈独秀右倾机会主义、李立三“左”倾冒险主义、王明“左”倾教条主义等三次大错误，使中国革命受到挫折，造成严重危害。",
+    answer: true
+  },
+  {
+    question: "2、国民党在全国建立统治以后，实行的依然是地主阶级和买办性的大资产阶级的统治。",
+    answer: true
+  },
+  {
+    question: "3、毛泽东是农村包围城市、武装夺取政权革命新道路开辟的杰出代表。",
+    answer: true
+  },
+  {
+    question: "4、遵义会议是中国共产党历史上一个生死攸关的转折点。",
+    answer: true
+  },
+  {
+    question: "5、1931年11月，中华苏维埃第一次全国工农兵代表大会在江西瑞金召开。",
+    answer: true
+  },
+  {
+    question: "6、1927年7月大革命失败到1935年遵义会议召开之前，“左”倾错误先后三次在党中央的领导机关取得了统治地位。",
+    answer: true
+  },
+  {
+    question: "7、中国共产党独立领导革命战争、创建人民军队和武装夺取政权的开端是秋收起义。",
+    answer: true
+  },
+  {
+    question: "8、新民主主义革命是无产阶级领导的革命，所以中国革命实质上是无产阶级领导的社会主义革命。",
+    answer: false
+  },
+  {
+    question: "9、在1927年召开的八七会议上，毛泽东强调党“以后要非常注意军事，须知政权是由枪杆子中取得的”。",
+    answer: true
+  },
+  {
+    question: "10、红色政权存在和发展的根本原因：中国是一个政治经济发展极不平衡的半殖民地半封建大国。",
+    answer: true
+  },
+  {
+    question: "11、1927年9月9日，毛泽东等领导的湘赣边界秋收起义爆发。起义军公开打出了“工农革命军”的旗帜。",
+    answer: true
+  },
+  {
+    question: "12、八七会议使中国共产党在政治上大大前进了一步，开始了从大革命失败到土地革命战争兴起的转折。",
+    answer: true
+  },
+  {
+    question: "13、1927年4月18日，南京国民政府成立，国民党所实行的是代表地主阶级、买办性的大资产阶级利益的一党专政的军事独裁统治。",
+    answer: true
+  },
+  {
+    question: "14、1927年召开的八七会议，开始确立以毛泽东为代表的马克思主义的正确路线在中共中央的领导地位。",
+    answer: false
+  }
+];
+
+
+  let currentType = 'single'; // 'single', 'multi', 'judge'
+  let current = 0;
+  let multiSelected = []; // 多选题已选项
+
+  function renderQuestion() {
+    let q;
+    if (currentType === 'single') {
+      q = quiz[current];
+    } else if (currentType === 'multi') {
+      q = multiQuiz[current];
+    } else if (currentType === 'judge') {
+      q = judgeQuiz[current];
+    }
+
+    document.getElementById("question").innerText = q.question;
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    if (currentType === 'judge') {
+      ["正确", "错误"].forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkJudgeAnswer(index === 0, div);
+        optionsDiv.appendChild(div);
+      });
+    } else if (currentType === 'multi') {
+      multiSelected = [];
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => toggleMultiSelect(div, index);
+        optionsDiv.appendChild(div);
+      });
+      // 添加放大且居中的提交按钮
+      const submitBtn = document.createElement("button");
+      submitBtn.innerText = "提交";
+      submitBtn.className = "multi-submit-btn";
+      submitBtn.onclick = checkMultiAnswer;
+      optionsDiv.appendChild(submitBtn);
+    } else {
+      // 单选
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkAnswer(index, div);
+        optionsDiv.appendChild(div);
+      });
+    }
+  }
+
+  function toggleMultiSelect(div, index) {
+    if (multiSelected.includes(index)) {
+      multiSelected = multiSelected.filter(i => i !== index);
+      div.classList.remove("selected");
+    } else {
+      multiSelected.push(index);
+      div.classList.add("selected");
+    }
+  }
+
+  function checkMultiAnswer() {
+    const correct = multiQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      // 提交后，所有正确选项变绿，其他不变色
+      if (correct.includes(i)) {
+        opt.classList.add("correct");
+      }
+      opt.classList.remove("selected");
+    });
+    // 禁用提交按钮
+    const btn = document.querySelector(".multi-submit-btn");
+    if (btn) btn.disabled = true;
+  }
+
+  function checkAnswer(index, el) {
+    let correct = quiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if (i === correct) opt.classList.add("correct");
+      else if (i === index) opt.classList.add("wrong");
+    });
+  }
+
+  function checkJudgeAnswer(isTrue, el) {
+    let correct = judgeQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if ((i === 0 && correct) || (i === 1 && !correct)) {
+        opt.classList.add("correct");
+      } else if ((i === 0 && !correct && isTrue) || (i === 1 && correct && !isTrue)) {
+        opt.classList.add("wrong");
+      }
+    });
+  }
+
+  function showAnswer() {
+    if (currentType === 'single') {
+      const correctIndex = quiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (i === correctIndex) opt.classList.add("correct");
+      });
+    } else if (currentType === 'multi') {
+      const correct = multiQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (correct.includes(i)) opt.classList.add("correct");
+      });
+      const btn = document.querySelector("#options button");
+      if (btn) btn.disabled = true;
+    } else if (currentType === 'judge') {
+      let correct = judgeQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if ((i === 0 && correct) || (i === 1 && !correct)) {
+          opt.classList.add("correct");
+        }
+      });
+    }
+  }
+
+  function nextQuestion() {
+    if (currentType === 'single') {
+      if (current < quiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'multi';
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'multi') {
+      if (current < multiQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'judge';
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'judge') {
+      if (current < judgeQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      }
+    }
+  }
+
+  function prevQuestion() {
+    if (current > 0) {
+      current--;
+      renderQuestion();
+    } else if (currentType === 'multi') {
+      currentType = 'single';
+      current = quiz.length - 1;
+      renderQuestion();
+    } else if (currentType === 'judge') {
+      currentType = 'multi';
+      current = multiQuiz.length - 1;
+      renderQuestion();
+    }
+  }
+
+  renderQuestion();
+</script>
+
+</body>
+</html>

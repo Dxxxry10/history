@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>近现代史刚要第六章</title>
+  <style>
+    body { font-family: sans-serif; }
+    .modal {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: white; padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      width: 400px; border-radius: 10px;
+    }
+    .option {
+      margin: 8px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s, color 0.2s;
+      text-align: left;
+    }
+    .option.selected {
+      background-color: #444 !important;
+      color: #fff !important;
+      border-color: #444 !important;
+    }
+    .option.correct {
+      background-color: #43a047 !important;
+      color: #fff !important;
+      border-color: #43a047 !important;
+    }
+    .option.wrong {
+      background-color: #ffcaca;
+    }
+    .buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .multi-submit-btn {
+      display: block;
+      margin: 32px auto 0 auto;
+      background: linear-gradient(to right, #4a00e0, #8e2de2);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 15px;
+      font-size: 0.7rem;
+      font-weight: 300;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(142, 45, 226, 0.2);
+    }
+    .multi-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<div class="modal" id="quizModal">
+  <div id="question"></div>
+  <div id="options"></div>
+  <div class="buttons">
+    <button onclick="prevQuestion()">上一题</button>
+    <button onclick="showAnswer()">不会</button>
+    <button onclick="nextQuestion()">下一题</button>
+  </div>
+</div>
+
+<script>
+
+const quiz = [
+  {
+    question: "1、标志十年内战的局面结束，国内和平基本实现，成为时局转换的枢纽的是（  ）",
+    options: [
+      "A、国民党五届三中全会的召开",
+      "B、西安事变的和平解决",
+      "C、中共瓦窑堡会议的召开",
+      "D、蒋介石发表庐山谈话"
+    ],
+    answer: 1
+  },
+  {
+    question: "2、抗日战争以来中国军队取得的第一次胜利，打破了“日军不可战胜”神话的战役是（  ）",
+    options: [
+      "A、台儿庄战役",
+      "B、雁门关大捷",
+      "C、百团大战",
+      "D、平型关战役"
+    ],
+    answer: 3
+  },
+  {
+    question: "3、延安整风运功是一场伟大的思想解放运动。这一运动最主要的任务是反对主观主义。主观主义的主要表现形式为(     )",
+    options: [
+      "A、教条主义，形式主义",
+      "B、形式主义，经验主义",
+      "C、教条主义，经验主义",
+      "D、宗派主义，形式主义"
+    ],
+    answer: 2
+  },
+  {
+    question: "4、中国共产党确定毛泽东思想作为自己指导思想的会议是（     ）",
+    options: [
+      "A、瓦窑堡会议",
+      "B、六届七中全会",
+      "C、六届六中全会",
+      "D、中国共产党第七次全国代表大会"
+    ],
+    answer: 3
+  },
+  {
+    question: "5、日本帝国主义全面侵华，中国全国性抗日战争开始于（　  　）",
+    options: [
+      "A、九•一八事变",
+      "B、一•二八事变",
+      "C、七•七事变",
+      "D、华北事变"
+    ],
+    answer: 2
+  },
+  {
+    question: "6、1935年8月1日，中共驻共产国际代表团发表(      )",
+    options: [
+      "A、呼吁一致抗日 《停止内战一致抗日》",
+      "B、《停战议和一致抗日》",
+      "C、《为抗日救国告全国同胞书》",
+      "D、《反日反蒋的初步协定》"
+    ],
+    answer: 2
+  },
+  {
+    question: "7、皖南事变发生后，周恩来发表'千古奇冤，江南一叶，同室操戈，相煎何急?'的题词。这表明中共（   ）",
+    options: [
+      "A、认为国共合作实际上已经破裂",
+      "B、决定武装反抗国民党的屠杀政策",
+      "C、要独立自主的担负起反抗日本侵略的责任",
+      "D、揭露顽固派阴谋，坚持抗日民族统一战线"
+    ],
+    answer: 3
+  },
+  {
+    question: "8、1946年5月4日，中共中央发出《关于清算、减租及土地问题的指示》，决定将党在抗日战争时期实行的减租减息政策改变为（    ）",
+    options: [
+      "A、“保存富农经济”的政策",
+      "B、“地主不分田，富农分坏田”的政策",
+      "C、“耕者有其田”的政策",
+      "D、“没收一切土地”的政策"
+    ],
+    answer: 2
+  },
+  {
+    question: "9、1940年，枣宜会战后，周恩来称誉一位国民党爱国将领是'全国军人楷模'。他是（  ）",
+    options: [
+      "A、张自忠",
+      "B、张治中",
+      "C、张灵甫",
+      "D、张发奎"
+    ],
+    answer: 0
+  },
+  {
+    question: "10、中国人民抗日战争胜利的纪念日是（     ）",
+    options: [
+      "A、8月15日",
+      "B、9月3日",
+      "C、7月7日",
+      "D、8月12日"
+    ],
+    answer: 1
+  },
+  {
+    question: "11、抗日战争进入相持阶段后，中国共产党领导的人民军队在华北给日本侵略者沉重打击的一次军事行动是（      ）",
+    options: [
+      "A、百团大战",
+      "B、平型关战役",
+      "C、凇沪会战",
+      "D、台儿庄战役"
+    ],
+    answer: 0
+  },
+  {
+    question: "12、“日满华三国应以建设东亚新秩序为共同目标而联合起来...放弃抗日的愚蠢举动和对满洲国的成见。”日本这一主张产生的直接影响是（    ）",
+    options: [
+      "A、抗战进入相持阶段",
+      "B、日本扶植建立伪满洲国",
+      "C、汪精卫集团公开叛国投敌",
+      "D、国民党制造皖南事变"
+    ],
+    answer: 2
+  },
+  {
+    question: "13、抗日战争期间，延安‘吸引了一个美国军事观察团...大批外国记者前来采访’。其主要原因是（   ）",
+    options: [
+      "A、中共领袖人物的个人魅力",
+      "B、中共的抗日主张得到了普遍认同",
+      "C、中共坚持抗战赢得了国际友人的广泛同情",
+      "D、中共领导的抗日力量在抗战中的地位日显重要"
+    ],
+    answer: 3
+  },
+  {
+    question: "14、抗战初期两条不同抗战路线的根本区别是（    ）",
+    options: [
+      "A、是否抵抗日本侵略",
+      "B、是否依靠人民群众",
+      "C、是否合作抗战",
+      "D、是否积极抗战"
+    ],
+    answer: 1
+  },
+  {
+    question: "15、抗日民族统一战线中的进步势力主要是指（   ）",
+    options: [
+      "A、无产阶级、农民阶级和城市小资产阶级",
+      "B、八路军、新四军",
+      "C、共产党的组织",
+      "D、知识分子"
+    ],
+    answer: 0
+  },
+  {
+    question: "16、毛泽东在《论持久战》中指出，中国抗日战争取得胜利最关键的阶段是（  ）",
+    options: [
+      "A、战略防御阶段",
+      "B、战略相持阶段",
+      "C、战略反攻阶段",
+      "D、战略决战阶段"
+    ],
+    answer: 1
+  },
+  {
+    question: "17、中国共产党制定《抗日救国十大纲领》的重要会议是（   ）",
+    options: [
+      "A、瓦窑堡会议",
+      "B、洛川会议",
+      "C、中共六届六中全会",
+      "D、中共六届七中全会"
+    ],
+    answer: 1
+  },
+  {
+    question: "18、1945年8月，毛泽东发表的号召对日本侵略者实行全国规模反攻的文章是（   ）",
+    options: [
+      "A、《为抗日救国告全国同胞书》",
+      "B、《关于目前形势与党的任务的决定》",
+      "C、《论持久战》",
+      "D、《对日寇的最后一战》"
+    ],
+    answer: 3
+  },
+  {
+    question: "19、在抗日战争的淞沪会战中，率领'八百壮士'孤军奋守四行仓库的爱国将领是（     )",
+    options: [
+      "A、佟麟阁",
+      "B、赵登禹",
+      "C、谢晋元",
+      "D、李宗仁"
+    ],
+    answer: 2
+  },
+  {
+    question: "20、抗日战争时期，根据地政权的民主建设主要体现为（     ）",
+    options: [
+      "A、建立中华苏维埃共和国",
+      "B、实行'三三制'原则",
+      "C、开展整风运动",
+      "D、推行精兵简政政策"
+    ],
+    answer: 1
+  },
+  {
+    question: "21、1938年10月，日本侵略军占领广州、武汉后改变了侵华战略方针，这是因为（  ）",
+    options: [
+      "A、日军战线太长，兵力与财力不足",
+      "B、英美等国政府支援强国抗战",
+      "C、国民政府在抗日问题上出现动摇",
+      "D、汪精卫成立了效忠日本的伪政权"
+    ],
+    answer: 0
+  },
+  {
+    question: "22、抗日战争是一场全民族反抗外敌入侵的正义战争。抗战初期，在华北战场上规模最大，最激烈的一次战役，也是国共两党军队合作抗日、配合最好的一次战役是（  ）",
+    options: [
+      "A、台儿庄战役",
+      "B、长城抗战",
+      "C、平津会战",
+      "D、忻口会战"
+    ],
+    answer: 3
+  },
+  {
+    question: "23、造成抗战时期蒋介石集团政治态度两面性的主要原因是（   ）",
+    options: [
+      "A、日本灭亡中国的方针没有改变",
+      "B、中国领导的抗日武装力量的发展壮大",
+      "C、国民党代表大地主大资产阶级利益",
+      "D、民族矛盾和阶级矛盾的相互作用"
+    ],
+    answer: 3
+  },
+  {
+    question: "24、美国新闻记者、作家埃德加·斯诺1936年访问某一地区，他惊奇地发现...看到了中国未来的希望和抗日胜利的曙光。这一地区指的是（   ）",
+    options: [
+      "A、中央革命根据地",
+      "B、左右江根据地",
+      "C、陕甘宁根据地",
+      "D、晋察冀抗日根据地"
+    ],
+    answer: 2
+  },
+  {
+    question: "25、第二次国共合作得以长期维持的主要原因是因为中国共产党(    )",
+    options: [
+      "A、以民族大义为重，对国民党反共摩擦予以理解",
+      "B、党外合作，保持中共在统一战线的绝对领导地位",
+      "C、在统一战线中以斗争求团结",
+      "D、维护国民党在统一战线中的领导地位"
+    ],
+    answer: 2
+  },
+  {
+    question: "26、1942年，美国总统罗斯福对他的儿子说'如果没有中国...'罗斯福的话主要说明（     ）",
+    options: [
+      "A、美国应该支持中国抗战",
+      "B、美国对中国的抗战抱有同情心",
+      "C、美国对中国抗战持观望态度",
+      "D、中国抗战有力支援了其它国家的反法西斯战争"
+    ],
+    answer: 3
+  },
+  {
+    question: "27、下列关于抗战胜利的意义评述不恰当的是（    ）",
+    options: [
+      "A、是中国近百年来第一次取得反对外来侵略的完全胜利",
+      "B、为世界反法西斯战争作出了贡献",
+      "C、提高了中国的国际地位",
+      "D、结束了半殖民地的历史"
+    ],
+    answer: 3
+  },
+  {
+    question: "28、抗日战争时期国共两党合作的主要表现是（   ）",
+    options: [
+      "A、统一领导全国抗战",
+      "B、抗日战场上相互配合",
+      "C、两党军队间避免冲突",
+      "D、发动广大民众一致抗日"
+    ],
+    answer: 1
+  },
+  {
+    question: "29、抗日战争进入相持阶段后，日本调整侵华方针的根本原因是(     )",
+    options: [
+      "A、日本试图引诱国民政府投降",
+      "B、日军主战场移至太平洋地区",
+      "C、其实力与战略意图产生了矛盾",
+      "D、日本避免过早刺激英美参战"
+    ],
+    answer: 2
+  },
+  {
+    question: "30、中国共产党确定抗日民主统一战线新政策的会议是（ 　）",
+    options: [
+      "A、遵义会议",
+      "B、瓦窑堡会议",
+      "C、中共六大",
+      "D、延安会议"
+    ],
+    answer: 1
+  },
+  {
+    question: "31、1945年8月，毛泽东指出：'抗日战争阶段过去了，新的情况和任务是国内斗争。'这一斗争主要集中在（   ）",
+    options: [
+      "A、建立什么性质的国家",
+      "B、争取和平反对内战",
+      "C、是否继续维持统一战线",
+      "D、是否召开国民大会"
+    ],
+    answer: 0
+  },
+  {
+    question: "32、西安事变的和平解决成为时局转换的枢纽，这主要是指（   ）",
+    options: [
+      "A、蒋介石接受中共反帝反封建的主张",
+      "B、显示中国各阶层要求团结抗日的强烈愿望",
+      "C、充分表明中国共产党团结抗日的诚意",
+      "D、国共两党由内战到和平，由分裂对峙到合作抗日"
+    ],
+    answer: 3
+  },
+  {
+    question: "33、国共两党的第一、第二次合作的实现，主要是由于（   ）",
+    options: [
+      "A、两党最高革命纲领一致",
+      "B、两党面临共同斗争任务",
+      "C、两党得到外部力量帮助",
+      "D、中日民族矛盾十分尖锐"
+    ],
+    answer: 3
+  },
+  {
+    question: "34、中国工农红军取下八角帽，摘下红五星，穿上国民革命军军服，开赴抗日前线应该在（  ）",
+    options: [
+      "A、九一八事变之后",
+      "B、西安事变之后",
+      "C、卢沟桥事变之后",
+      "D、中共七大之后"
+    ],
+    answer: 2
+  },
+  {
+    question: "35、皖南事变反映出中共处理国共关系的基本点是（    ）",
+    options: [
+      "A、果断反击顽固派",
+      "B、争取中间势力支持",
+      "C、扩大和巩固统一战线",
+      "D、争取建立民主联合政府"
+    ],
+    answer: 2
+  },
+  {
+    question: "36、在《论持久战》中，毛泽东指出中国抗战胜利的根本出路是（    ）",
+    options: [
+      "A、开展游击战争",
+      "B、建立抗日根据地",
+      "C、国共长期合作",
+      "D、实行人民战争"
+    ],
+    answer: 3
+  },
+  {
+    question: "37、1937年8月，洛川会议制定了抗日救国十大纲领，强调要打倒日本帝国主义，关键在于（    ）",
+    options: [
+      "A、持久战",
+      "B、开辟敌后战场",
+      "C、使已经发动的抗战成为全面的全民族的抗战",
+      "D、坚持统一战线中无产阶级的领导权"
+    ],
+    answer: 2
+  },
+  {
+    question: "38、中国共产党在不同时期实行不同土地政策的根本出发点是（    ）",
+    options: [
+      "A、不同时期的斗争策略",
+      "B、国内主要矛盾的转化",
+      "C、不同时期农民的要求",
+      "D、反对国民党斗争的需要"
+    ],
+    answer: 1
+  },
+  {
+    question: "39、2001年10月，张学良将军在美国夏威夷去世...张将军之所以受人景仰，是因为（     ）",
+    options: [
+      "A、冲破'不抵抗政策'，领导了东北抗日斗争",
+      "B、宣布'东北易帜'，服从南京国民政府",
+      "C、促成了国共两党结束内战，实现第二次合作",
+      "D、晚年致力于祖国统一大业，推动两岸合作交流"
+    ],
+    answer: 2
+  },
+  {
+    question: "40、1940年春，一位身处华东日本占领区的爱国人士撰写对联讽刺当局...据此推断，该对联讽刺的可能是（  ）",
+    options: [
+      "A、袁世凯洪宪帝国",
+      "B、伪满洲国",
+      "C、汪伪政权",
+      "D、重庆国民政府"
+    ],
+    answer: 2
+  },
+  {
+    question: "41、下列关于抗战防御阶段说法正确的是(      )",
+    options: [
+      "A、中共领导的敌后战场是主战场",
+      "B、蒋介石集团口头上抗战，行动上妥协",
+      "C、日本用主要兵力进攻敌后根据地",
+      "D、蒋介石组织正面会战，力图争取时间，坚持抗战"
+    ],
+    answer: 3
+  },
+  {
+    question: "42、中国抗日战争取得完全胜利的重要标志是(     )",
+    options: [
+      "A、1945年8月15日，日本天皇宣布无条件投降",
+      "B、1945年9月2日，东京湾举行日本投降签字仪式",
+      "C、1945年10月25日，中国政府在台湾举行受降仪式",
+      "D、1945年9月9日，中国战区日军投降签字仪式在南京举行"
+    ],
+    answer: 2
+  }
+];
+
+const multiQuiz = [
+  {
+    question: "1、中国共产党在全民族抗战中起到了中流砥柱的作用，表现在（   ）",
+    options: [
+      "A、积极倡导、促成、维护抗日民族统一战线，最大限度动员全国军民共同抗战",
+      "B、创立和发展了毛泽东思想，对抗战胜利发挥了重要的指导作用",
+      "C、开辟敌后战场，建立抗日根据地，牵制和消灭了日军大量有生力量",
+      "D、坚持全面抗战路线，制定正确的战略方针，最富于献身精神"
+    ],
+    answer: [0, 1, 2, 3] // ABCD
+  },
+  {
+    question: "2、抗日战争取得完全胜利的原因在于（       ）",
+    options: [
+      "A、中国共产党在全民族抗战中起到了中流砥柱的作用",
+      "B、中国人民巨大的民族觉醒、空前的民族团结和英勇的民族抗争",
+      "C、日本帝国主义内部的矛盾",
+      "D、世界所有爱好和平和正义的国家和人民、国际组织以及反法西斯力量的同情和支持"
+    ],
+    answer: [0, 1, 3] // ABD
+  },
+  {
+    question: "3、抗日民主政府在工作人员分配上实行'三三制'原则。'三三制'原则的内容是（    ）",
+    options: [
+      "A、共产党员占三分之一",
+      "B、不左不右的中间派人士占三分之一",
+      "C、民主党派占三分之一",
+      "D、非党的左派进步分子占三分之一"
+    ],
+    answer: [0, 1, 3] // ABD
+  },
+  {
+    question: "4、延安整风运功最主要的任务是反对主观主义。主观主义的主要表现形式为(        )",
+    options: [
+      "A、形式主义",
+      "B、宗派主义",
+      "C、教条主义",
+      "D、经验主义"
+    ],
+    answer: [2, 3] // CD
+  },
+  {
+    question: "5、为了抗日民族统一战线的坚持、扩大和巩固，中国共产党制定的策略总方针是（    ）",
+    options: [
+      "A、发展进步势力",
+      "B、争取中间势力",
+      "C、孤立顽固势力",
+      "D、联合所有势力"
+    ],
+    answer: [0, 1, 2] // ABC
+  },
+  {
+    question: "6、皖南事变后，中国共产党坚持的方针和原则包括（   ）",
+    options: [
+      "A、又联合又斗争",
+      "B、有理、有利、有节",
+      "C、针锋相对，寸土必争",
+      "D、发展进步势力，中间势力，孤立顽固势力"
+    ],
+    answer: [0, 1] // AB
+  },
+  {
+    question: "7、下列关于皖南事变的表述正确的是（   ）",
+    options: [
+      "A、它是国民党顽固派破坏抗战的行为",
+      "B、中国共产党坚决回击顽固派的进攻",
+      "C、英美支持蒋介石发动皖南事变",
+      "D、抗日民族统一战线由此完全破裂"
+    ],
+    answer: [0, 1] // AB
+  },
+  {
+    question: "8、下列关于延安整风运动的表述正确的是（    ）",
+    options: [
+      "A、在思想上清算了'左'的和右的错误",
+      "B、实行了'惩前毖后，治病救人'的方针",
+      "C、确立毛泽东思想为全党的指导思想",
+      "D、为新民主主义革命在全国的胜利奠定了思想基础"
+    ],
+    answer: [0, 1, 3] // ABD
+  },
+  {
+    question: "9、影响国共两党关系的因素有（    ）",
+    options: [
+      "A、社会主要矛盾的变化",
+      "B、国共两党的阶级立场",
+      "C、国际政治势力的态度",
+      "D、中国社会性质的变化"
+    ],
+    answer: [0, 1, 2] // ABC
+  },
+  {
+    question: "10、抗战初期国民党正面战场失利的原因（    ）",
+    options: [
+      "A、由于在敌我力量对比上，日军占很大优势",
+      "B、国民党战略指导方针上的失误",
+      "C、实行片面抗战路线",
+      "D、国民党政府在军事、政治、经济各方面陷入深刻的危机"
+    ],
+    answer: [0, 1, 2, 3] // ABCD
+  },
+  {
+    question: "11、造成蒋介石既反共又不放弃抗日的因素包括(     )",
+    options: [
+      "A、日本对国民党的诱降政策",
+      "B、敌后抗日根据地的壮大",
+      "C、美英与日本在亚太地区的矛盾",
+      "D、中共坚持以斗争求团结的方针"
+    ],
+    answer: [0, 1, 2, 3] // ABCD
+  },
+  {
+    question: "12、抗战时期，中共在党的自身建设上取得的成就是(    )",
+    options: [
+      "A、确立了以毛泽东为核心的党中央的领导",
+      "B、确定毛泽东思想为党的指导思想",
+      "C、从思想上清算了'左'的和右的错误",
+      "D、形成了空前的团结和统一"
+    ],
+    answer: [0, 2, 3] // ACD
+  },
+  {
+    question: "13、历史上体现国共合作的事件有(     )",
+    options: [
+      "A、黄埔军校的创建",
+      "B、北伐战争",
+      "C、南昌起义",
+      "D、西安事变的和平解决"
+    ],
+    answer: [0, 1, 3] // ABD
+  },
+  {
+    question: "14、从国民政府声明中可以得出的结论（     ）",
+    options: [
+      "A、国民政府实行全面抗战路线",
+      "B、国人民族意识空前增强",
+      "C、抗战进入相持阶段",
+      "D、中国军队殊死抗击日军进攻"
+    ],
+    answer: [1, 3] // BD
+  },
+  {
+    question: "15、国民党'防共委员会'的方针为 (     )",
+    options: [
+      "A、防共",
+      "B、限共",
+      "C、溶共",
+      "D、反共"
+    ],
+    answer: [0, 1, 2, 3] // ABCD
+  },
+  {
+    question: "16、毛泽东科学预测抗日战争的发展进程包括（    ）",
+    options: [
+      "A、战略防御",
+      "B、战略相持",
+      "C、战略进攻",
+      "D、战略反攻"
+    ],
+    answer: [0, 1, 3] // ABD
+  },
+  {
+    question: "17、日本侵略罪行的主要表现是（    ）",
+    options: [
+      "A、制造惨绝人寰的大屠杀",
+      "B、控制铁路交通",
+      "C、肆意掠夺矿产资源、土地及农产品",
+      "D、强制推行奴化教育"
+    ],
+    answer: [0, 1, 2, 3] // ABCD
+  },
+  {
+    question: "18、体现'阶级斗争服从民族斗争'原则的政策措施有（   ）",
+    options: [
+      "A、和平解决西安事变",
+      "B、开辟敌后战场",
+      "C、减租减息的土地政策",
+      "D、有理、有利、有节地反击反共高潮"
+    ],
+    answer: [0, 2, 3] // ACD
+  },
+  {
+    question: "19、毛泽东发表《论持久战》的目的有（    ）",
+    options: [
+      "A、驳斥'亡国论'和'速胜论'",
+      "B、向中国人民指明抗战胜利的正确道路",
+      "C、打退日军的'扫荡'",
+      "D、建立抗日民族统一战线"
+    ],
+    answer: [0, 1] // AB
+  },
+  {
+    question: "20、中国的抗日战争是世界反法西斯战争的重要组成部分，其表现是（   ）",
+    options: [
+      "A、中国战场年平均牵制74%以上的日本陆军",
+      "B、日军在海外作战中损失的287万人中，有150万人伤亡在中国战场",
+      "C、中国为盟国提供了大量的战略物资和军事情报",
+      "D、美英法等国向中国提供了经济援助或军事合作"
+    ],
+    answer: [0, 1, 2] // ABC
+  },
+  {
+    question: "21、'一二·九'运动与'五·四'运动的共同点是（   ）",
+    options: [
+      "A、由中国共产党领导",
+      "B、背景是面临民族危机",
+      "C、以青年学生为先锋",
+      "D、始于北京后扩大到全国"
+    ],
+    answer: [1, 2, 3] // BCD
+  },
+  {
+    question: "22、毛泽东认为抗日战争最后胜利一定属于中国的原因是（  ）",
+    options: [
+      "A、中国是大国，地大物博",
+      "B、日本是小国，经不起长期战争",
+      "C、中国在国际上得道多助",
+      "D、日本发动的是退步的、野蛮的侵略战争"
+    ],
+    answer: [0, 1, 2, 3] // ABCD
+  },
+  {
+    question: "23、在统一战线中坚持独立自主的具体表现是（   ）",
+    options: [
+      "A、共产党必须保持在思想上、政治上和组织上的独立性",
+      "B、放手发动群众，壮大人民力量",
+      "C、必须坚持党对军队的绝对领导",
+      "D、必须对国民党采取又团结又斗争、以斗争求团结的方针"
+    ],
+    answer: [0, 1, 2, 3] // ABCD
+  },
+  {
+    question: "24、正面战场和敌后战场的主要区别是（   ）",
+    options: [
+      "A、抗战的领导不同",
+      "B、抗战路线不同",
+      "C、作战方式不同",
+      "D、战略地位不同"
+    ],
+    answer: [0, 1, 2] // ABC
+  },
+  {
+    question: "25、抗日民族统一战线的特点包括(     )",
+    options: [
+      "A、国共两个政权、两个军队的合作",
+      "B、采取党内合作的方式",
+      "C、没有共同的纲领和统一的领导机构",
+      "D、广泛的民族性和极大的复杂性"
+    ],
+    answer: [0, 2, 3] // ACD
+  },
+  {
+    question: "26、抗日战争出现战略相持阶段的原因有（     ）",
+    options: [
+      "A、日本改变侵华方针",
+      "B、日本的侵略力量相对不足",
+      "C、国民党正面战场的连续败退",
+      "D、人民抗日力量还比较弱小"
+    ],
+    answer: [0, 1, 3] // ABD
+  }
+];
+
+const judgeQuiz = [
+  {
+    question: "1、国民党政府和军队在整个抗日战争时期对日作战都是消极的。",
+    answer: false
+  },
+  {
+    question: "2、抗日战争时期，在战略防御阶段，日本侵略者以共产党军队为主要作战对象。",
+    answer: false
+  },
+  {
+    question: "3、抗日战争时期，在战略相持阶段，日军逐步将主要兵力用于打击敌后战场的人民军队，以保持和巩固其占领地。",
+    answer: true
+  },
+  {
+    question: "4、在抗日战争初期，国民政府实行过若干有利于抗战的政策。",
+    answer: true
+  },
+  {
+    question: "5、中国共产党制定的'发展进步势力，争取中间势力，孤立顽固势力'的抗日民族统一战线的策略总方针，其中中间势力是指'工人、农民和城市小资产阶级'。",
+    answer: false
+  },
+  {
+    question: "6、在抗日战争时期，为了适应抗战的需要，中国共产党将土地革命时期的没收封建地主阶级土地的政策改变为'减租减息'政策。",
+    answer: true
+  },
+  {
+    question: "7、抗日战争时期，中国共产党的土地政策是没收地主阶级的土地归农民所有。",
+    answer: false
+  },
+  {
+    question: "8、1937年11月，王明从莫斯科回到延安，在统一战线问题上主张'一切服从统一战线'、'一切经过统一战线'，把共产党及其领导的人民军队的活动限制在国民党允许的范围内，中共六届六中会纠正了王明的右倾错误。",
+    answer: true
+  },
+  {
+    question: "9、中国共产党强调，必须在抗日民主统一战线中坚持独立自主原则。",
+    answer: true
+  },
+  {
+    question: "10、在抗日战争时期，中国共产党在政治上、组织上、军事上完全听命于国民党的领导。",
+    answer: false
+  },
+  {
+    question: "11、在抗战时期，国民党实行片面抗战路线，正面战场未能起到抗击日军的作用。",
+    answer: false
+  },
+  {
+    question: "12、1937年7月7日，爆发卢沟桥事变，日本全面侵华战争由此开始。",
+    answer: true
+  },
+  {
+    question: "13、在中华民族处于生死存亡的危急关头，与当时国民党当局采取的不抵抗主义形成鲜明的对照，中国共产党率先举起了武装抗日的旗帜。",
+    answer: true
+  },
+  {
+    question: "14、1932年4月15日，中华苏维埃共和国临时中央政府宣布对日作战。",
+    answer: true
+  },
+  {
+    question: "15、九一八事变后，中国共产党不仅积极参加和推动各地的抗日救亡运动，而且直接领导了东北人民的抗日武装斗争。",
+    answer: true
+  },
+  {
+    question: "16、1939年1月，国民党五届五中全会决定成立'防共委员会'，确定了'防共、限共、溶共、反共'的方针。",
+    answer: true
+  },
+  {
+    question: "17、抗日战争时期，与国民党实行的片面抗战路线不同，中国共产党一开始就主张实行全面抗战的路线。",
+    answer: true
+  },
+  {
+    question: "18、1938年9月-11月，中国共产党在延安举行了扩大的六届六中全会，全会基本上纠正了王明的右倾错误，进一步确立了毛泽东在全党的领导地位。",
+    answer: true
+  },
+  {
+    question: "19、抗日战争时期，中国共产党领导的人民军队在大部分时间里所进行的，主要是运动战。",
+    answer: false
+  },
+  {
+    question: "20、抗日战争时期，在战略防御阶段，国民党在战略战术上，没有采取积极防御的方针，而且进行单纯的阵地防御战。",
+    answer: true
+  }
+];
+
+
+  let currentType = 'single'; // 'single', 'multi', 'judge'
+  let current = 0;
+  let multiSelected = []; // 多选题已选项
+
+  function renderQuestion() {
+    let q;
+    if (currentType === 'single') {
+      q = quiz[current];
+    } else if (currentType === 'multi') {
+      q = multiQuiz[current];
+    } else if (currentType === 'judge') {
+      q = judgeQuiz[current];
+    }
+
+    document.getElementById("question").innerText = q.question;
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    if (currentType === 'judge') {
+      ["正确", "错误"].forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkJudgeAnswer(index === 0, div);
+        optionsDiv.appendChild(div);
+      });
+    } else if (currentType === 'multi') {
+      multiSelected = [];
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => toggleMultiSelect(div, index);
+        optionsDiv.appendChild(div);
+      });
+      // 添加放大且居中的提交按钮
+      const submitBtn = document.createElement("button");
+      submitBtn.innerText = "提交";
+      submitBtn.className = "multi-submit-btn";
+      submitBtn.onclick = checkMultiAnswer;
+      optionsDiv.appendChild(submitBtn);
+    } else {
+      // 单选
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkAnswer(index, div);
+        optionsDiv.appendChild(div);
+      });
+    }
+  }
+
+  function toggleMultiSelect(div, index) {
+    if (multiSelected.includes(index)) {
+      multiSelected = multiSelected.filter(i => i !== index);
+      div.classList.remove("selected");
+    } else {
+      multiSelected.push(index);
+      div.classList.add("selected");
+    }
+  }
+
+  function checkMultiAnswer() {
+    const correct = multiQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      // 提交后，所有正确选项变绿，其他不变色
+      if (correct.includes(i)) {
+        opt.classList.add("correct");
+      }
+      opt.classList.remove("selected");
+    });
+    // 禁用提交按钮
+    const btn = document.querySelector(".multi-submit-btn");
+    if (btn) btn.disabled = true;
+  }
+
+  function checkAnswer(index, el) {
+    let correct = quiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if (i === correct) opt.classList.add("correct");
+      else if (i === index) opt.classList.add("wrong");
+    });
+  }
+
+  function checkJudgeAnswer(isTrue, el) {
+    let correct = judgeQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if ((i === 0 && correct) || (i === 1 && !correct)) {
+        opt.classList.add("correct");
+      } else if ((i === 0 && !correct && isTrue) || (i === 1 && correct && !isTrue)) {
+        opt.classList.add("wrong");
+      }
+    });
+  }
+
+  function showAnswer() {
+    if (currentType === 'single') {
+      const correctIndex = quiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (i === correctIndex) opt.classList.add("correct");
+      });
+    } else if (currentType === 'multi') {
+      const correct = multiQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (correct.includes(i)) opt.classList.add("correct");
+      });
+      const btn = document.querySelector("#options button");
+      if (btn) btn.disabled = true;
+    } else if (currentType === 'judge') {
+      let correct = judgeQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if ((i === 0 && correct) || (i === 1 && !correct)) {
+          opt.classList.add("correct");
+        }
+      });
+    }
+  }
+
+  function nextQuestion() {
+    if (currentType === 'single') {
+      if (current < quiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'multi';
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'multi') {
+      if (current < multiQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'judge';
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'judge') {
+      if (current < judgeQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      }
+    }
+  }
+
+  function prevQuestion() {
+    if (current > 0) {
+      current--;
+      renderQuestion();
+    } else if (currentType === 'multi') {
+      currentType = 'single';
+      current = quiz.length - 1;
+      renderQuestion();
+    } else if (currentType === 'judge') {
+      currentType = 'multi';
+      current = multiQuiz.length - 1;
+      renderQuestion();
+    }
+  }
+
+  renderQuestion();
+</script>
+
+</body>
+</html>

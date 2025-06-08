@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>近现代史刚要第四章</title>
+  <style>
+    body { font-family: sans-serif; }
+    .modal {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: white; padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      width: 400px; border-radius: 10px;
+    }
+    .option {
+      margin: 8px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s, color 0.2s;
+      text-align: left;
+    }
+    .option.selected {
+      background-color: #444 !important;
+      color: #fff !important;
+      border-color: #444 !important;
+    }
+    .option.correct {
+      background-color: #43a047 !important;
+      color: #fff !important;
+      border-color: #43a047 !important;
+    }
+    .option.wrong {
+      background-color: #ffcaca;
+    }
+    .buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .multi-submit-btn {
+      display: block;
+      margin: 32px auto 0 auto;
+      background: linear-gradient(to right, #4a00e0, #8e2de2);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 15px;
+      font-size: 0.7rem;
+      font-weight: 300;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(142, 45, 226, 0.2);
+    }
+    .multi-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<div class="modal" id="quizModal">
+  <div id="question"></div>
+  <div id="options"></div>
+  <div class="buttons">
+    <button onclick="prevQuestion()">上一题</button>
+    <button onclick="showAnswer()">不会</button>
+    <button onclick="nextQuestion()">下一题</button>
+  </div>
+</div>
+
+<script>
+
+const quiz = [
+  {
+    question: "1. 在中国最早讴歌十月革命、比较系统地介绍马克思主义的是：",
+    options: ["A. 陈独秀", "B. 李大钊", "C. 毛泽东", "D. 瞿秋白"],
+    answer: 1
+  },
+  {
+    question: "2. 新民主主义革命的开端是：",
+    options: ["A. 中共二大", "B. 中国共产党的成立", "C. 中国无产阶级的产生", "D. 五四运动"],
+    answer: 3
+  },
+  {
+    question: "3. 陈独秀将注意力倾注于思想变革的原因是：",
+    options: ["A. 他认定改造国民性是政治变革的前提", "B. 他对资本阶级民主主义产生了怀疑", "C. 他对政治问题不感兴趣", "D. 他认为批评时政不利于改造青年思想"],
+    answer: 0
+  },
+  {
+    question: "4. 中国共产党第一次提出明确的反帝反封建的民主革命纲领是在：",
+    options: ["A. 中共一大", "B. 中共二大", "C. 中共三大", "D. 中共四大"],
+    answer: 1
+  },
+  {
+    question: "5. 表明李大钊成为中国第一个马克思主义者的文章是：",
+    options: ["A. 《法俄革命之比较观》", "B. 《庶民的胜利》", "C. 《Bolshevism的胜利》", "D. 《我的马克思主义观》"],
+    answer: 3
+  },
+  {
+    question: "6. 中国工人阶级开始以独立姿态登上历史舞台是在：",
+    options: ["A. 辛亥革命", "B. 新文化运动", "C. 五四运动", "D. 中国共产党成立"],
+    answer: 2
+  },
+  {
+    question: "7. 新三民主义成为第一次国共合作政治基础的原因是：",
+    options: [
+      "A. 同中国共产党在民主革命阶段的纲领基本一致",
+      "B. 把斗争的矛头直接指向北洋军阀",
+      "C. 体现了联俄、联共、扶助农工三大革命政策",
+      "D. 把民主主义概括为“平均地权”"
+    ],
+    answer: 0
+  },
+  {
+    question: "8. 第一次国共合作的政治基础是：",
+    options: ["A. 三民主义", "B. 共产主义思想", "C. 联俄、联共、扶助农工的三大政策", "D. 新三民主义"],
+    answer: 3
+  },
+  {
+    question: "9. 1928年宣布“改易旗帜”的是：",
+    options: ["A. 张作霖", "B. 郭松龄", "C. 张学良", "D. 张作相"],
+    answer: 2
+  },
+  {
+    question: "10. 1914年7月，孙中山在日本东京成立的是：",
+    options: ["A. 兴中会", "B. 中国同盟会", "C. 中华革命党", "D. 中国国民党"],
+    answer: 2
+  },
+  {
+    question: "11. 1915年在上海创办《青年》杂志的是：",
+    options: ["A. 胡适", "B. 鲁迅", "C. 李大钊", "D. 陈独秀"],
+    answer: 3
+  },
+  {
+    question: "12. 中国近代史上，共和政体确立的标志是：",
+    options: ["A. 湖北军政府成立", "B. 南京临时政府成立", "C. 清帝退位", "D. 袁世凯当选为临时大总统"],
+    answer: 2
+  },
+  {
+    question: "13. 第一次国共合作实现的标志是：",
+    options: [
+      "A. 孙中山会见马林",
+      "B. 共产党人参加改组国民党会议",
+      "C. 中共三大决定共产党员以个人身份加入国民党",
+      "D. 国民党一大召开"
+    ],
+    answer: 3
+  },
+  {
+    question: "14. 新文化运动中揭露封建礼教的《狂人日记》作者是：",
+    options: ["A. 胡适", "B. 鲁迅", "C. 李大钊", "D. 陈独秀"],
+    answer: 1
+  },
+  {
+    question: "15. 反对封建主义、提倡民主与科学的思想启蒙运动是：",
+    options: ["A. 维新变法运动", "B. 洋务运动", "C. 五四运动", "D. 新文化运动"],
+    answer: 3
+  },
+  {
+    question: "16. 早期新文化运动的性质是：",
+    options: [
+      "A. 资产阶级民主主义思想文化运动",
+      "B. 新民主主义思想文化运动",
+      "C. 无产阶级思想文化运动",
+      "D. 马克思主义思想文化运动"
+    ],
+    answer: 0
+  },
+  {
+    question: "17. 新文化运动兴起的标志是：",
+    options: [
+      "A. 陈独秀创办《新青年》",
+      "B. 李大钊发表《庶民的胜利》",
+      "C. 胡适发表《文学改良刍议》",
+      "D. 鲁迅发表《狂人日记》"
+    ],
+    answer: 0
+  },
+  {
+    question: "18. 1924-1926年国民党的性质是：",
+    options: [
+      "A. 民族资产阶级政党",
+      "B. 工人、农民、小资产阶级、民族资产阶级政党",
+      "C. 大地主大资产阶级政党",
+      "D. 官僚资产阶级政党"
+    ],
+    answer: 1
+  },
+  {
+    question: "19. 大革命的深刻教训是必须：",
+    options: [
+      "A. 警惕统一战线内部的野心家",
+      "B. 和农民结成巩固的工农联盟",
+      "C. 提出能团结多数的革命口号",
+      "D. 无产阶级必须掌握革命领导权和革命武装"
+    ],
+    answer: 3
+  },
+  {
+    question: "20. 1927年汪精卫制造的屠杀事件是：",
+    options: ["A. 中山舰事件", "B. 整理党务案", "C. 四一二事变", "D. 七一五事变"],
+    answer: 3
+  }
+];
+
+quiz.push(
+  {
+    question: "21. 大革命失败的标志是：",
+    options: ["A. 四一二反革命政变", "B. 七一五反革命政变", "C. 国民党叛变革命", "D. 武汉国民政府分裂"],
+    answer: 2
+  },
+  {
+    question: "22. “四一二”反革命政变的直接后果是：",
+    options: ["A. 国共合作宣告失败", "B. 武汉国民政府成立", "C. 南京国民政府成立", "D. 革命统一战线破裂"],
+    answer: 0
+  },
+  {
+    question: "23. 表明大革命由高潮转入低潮的事件是：",
+    options: ["A. 中山舰事件", "B. 整理党务案", "C. 四一二政变", "D. 七一五政变"],
+    answer: 2
+  },
+  {
+    question: "24. 国共两党开始第二次合作的标志是：",
+    options: ["A. 停止内战，一致抗日", "B. 双方发表谈话", "C. 西安事变和平解决", "D. 洛川会议召开"],
+    answer: 1
+  },
+  {
+    question: "25. 抗日民族统一战线正式形成的标志是：",
+    options: ["A. 西安事变和平解决", "B. 七七事变", "C. 国共合作宣言发表", "D. 国民党召开五届三中全会"],
+    answer: 3
+  },
+  {
+    question: "26. 抗日民族统一战线中的领导权掌握在：",
+    options: ["A. 国民党手中", "B. 各抗日政党手中", "C. 中国共产党手中", "D. 全体中国人民手中"],
+    answer: 2
+  },
+  {
+    question: "27. 全面抗战爆发的标志是：",
+    options: ["A. 九一八事变", "B. 华北事变", "C. 一二八事变", "D. 七七事变"],
+    answer: 3
+  },
+  {
+    question: "28. 国共第二次合作的基础是：",
+    options: ["A. 国共谈判", "B. 停止内战", "C. 抗日", "D. 抗日民族统一战线"],
+    answer: 3
+  },
+  {
+    question: "29. 国民党正面战场主动出击时间最长、规模最大的一次战役是：",
+    options: ["A. 淞沪会战", "B. 太原会战", "C. 徐州会战", "D. 武汉会战"],
+    answer: 3
+  },
+  {
+    question: "30. 中国共产党全面抗战路线的基本内容是：",
+    options: ["A. 统一战线、持久战", "B. 全民族抗战、持久战、人民战争", "C. 武装斗争", "D. 游击战"],
+    answer: 1
+  },
+  {
+    question: "31. 中共在抗战中战胜顽固派进攻的最重要武器是：",
+    options: ["A. 三三制原则", "B. 八路军", "C. 坚持抗战", "D. 民主政权"],
+    answer: 0
+  },
+  {
+    question: "32. “三三制”民主政权的阶级基础是：",
+    options: ["A. 无产阶级", "B. 统一战线中的各个阶级", "C. 工农联盟", "D. 城市小资产阶级"],
+    answer: 1
+  },
+  {
+    question: "33. 日本宣布无条件投降的时间是：",
+    options: ["A. 1945年8月6日", "B. 1945年8月9日", "C. 1945年8月15日", "D. 1945年9月2日"],
+    answer: 2
+  },
+  {
+    question: "34. 抗日战争胜利的最关键的因素是：",
+    options: ["A. 国共两党合作", "B. 中国人民的英勇斗争", "C. 国际反法西斯战争的胜利", "D. 国民党正面战场的苦战"],
+    answer: 1
+  },
+  {
+    question: "35. 解放战争开始的标志是：",
+    options: ["A. 重庆谈判破裂", "B. 国共关系全面破裂", "C. 国民党发动全面内战", "D. 解放区军队发动反攻"],
+    answer: 2
+  },
+  {
+    question: "36. 解放战争战略进攻阶段的开端是：",
+    options: ["A. 刘邓挺进中原", "B. 三大战役胜利", "C. 渡江战役开始", "D. 辽沈战役胜利"],
+    answer: 0
+  },
+  {
+    question: "37. 标志人民解放军由战略防御转入战略进攻的重要战役是：",
+    options: ["A. 淮海战役", "B. 渡江战役", "C. 辽沈战役", "D. 豫东战役"],
+    answer: 3
+  },
+  {
+    question: "38. 解放战争三大战役的最后一个战役是：",
+    options: ["A. 辽沈战役", "B. 淮海战役", "C. 平津战役", "D. 渡江战役"],
+    answer: 2
+  },
+  {
+    question: "39. 标志中国共产党基本完成全国大陆胜利的战役是：",
+    options: ["A. 淮海战役", "B. 渡江战役", "C. 平津战役", "D. 辽沈战役"],
+    answer: 1
+  },
+  {
+    question: "40. 标志国民党统治覆灭，全国基本解放的时间是：",
+    options: ["A. 1949年10月", "B. 1950年6月", "C. 1950年5月", "D. 1950年7月"],
+    answer: 2
+  },
+  {
+    question: "41. 毛泽东系统总结民主革命经验教训的著作是：",
+    options: ["A. 《论持久战》", "B. 《星星之火，可以燎原》", "C. 《新民主主义论》", "D. 《中国革命和中国共产党》"],
+    answer: 3
+  }
+);
+
+const multiQuiz = [
+  {
+    question: "1、1925年至1927年的大革命规模宏伟，内涵丰富。与辛亥革命相比较，其不同点在于（  ）",
+    options: [
+      "A、它广泛而深刻地发动了工农群众",
+      "B、它的主要斗争形式是武装斗争",
+      "C、它的革命对象是帝国主义和封建军阀",
+      "D、它是在以国共合作为基础的统一战线的组织形式下进行的"
+    ],
+    answer: [0, 2, 3]
+  },
+  {
+    question: "2、新文化运动的主要阵地有（    ）",
+    options: [
+      "A、《新青年》杂志",
+      "B、北京大学",
+      "C、《中外纪闻》",
+      "D、《时务报》"
+    ],
+    answer: [0, 1]
+  },
+  {
+    question: "3、中国早期信仰马克思主义的人物的类型主要有（    ）",
+    options: [
+      "A、一部分原同盟会会员、辛亥革命时期的活动家",
+      "B、五四以前新文化运动的精神领袖",
+      "C、第一个工人运动高潮中工人领袖",
+      "D、五四爱国运动的左翼骨干"
+    ],
+    answer: [0, 1, 3]
+  },
+  {
+    question: "4、十月革命推动中国的先进分子从资产阶级民主主义转向社会主义的原因是：（   ）",
+    options: [
+      "A、十月革命启示中国人在经济文化落后的国家也可以用社会主义指引自己走向解放之路",
+      "B、十月革命后，苏维埃俄国号召反对帝国主义，以新的平等姿态对待中国，推动了社会主义思想在中国的传播",
+      "C、十月革命中工人和士兵的广泛发动并由此赢得胜利的事实昭示中国先进分子以新的方法开展革命",
+      "D、十月革命一声炮响，给我们送来了马克思列宁主义"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "5、下列人物中参加过中共一大的有(     )",
+    options: [
+      "A、陈独秀",
+      "B、陈公博",
+      "C、李达",
+      "D、张国焘"
+    ],
+    answer: [1, 2, 3] // 注：陈独秀未出席一大
+  },
+  {
+    question: "6、五四运动是一次真正的群众运动，参加这次运动的群众有（   ）",
+    options: [
+      "A、爱国学生",
+      "B、工人阶级",
+      "C、小资产阶级",
+      "D、资产阶级"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "7、国民党一大的主要内容及意义是（	   ）",
+    options: [
+      "A、讨论了国民党改组的问题",
+      "B、重新解释了三民主义",
+      "C、确立了联俄联共扶助农工政策",
+      "D、标志第一次国共合作的正式形成"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "8、中国早期马克思主义思想运动的特点是（    ）",
+    options: [
+      "A、重视对马克思主义基本理论的学习",
+      "B、明确地同第二国际的社会民主主义划清界限",
+      "C、注意从中国实际出发，学习、运用马克思主义的理论",
+      "D、开始提出知识分子应当同劳动群众相结合的思想"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "9、新文化运动的历史意义表现在它（   ）",
+    options: [
+      "A、彻底否定了孔学的历史作用",
+      "B、在社会上掀起了一股思想解放的潮流",
+      "C、为马克思主义在中国的传播创造了有利条件",
+      "D、是中国历史上一次前所未有的启蒙运动"
+    ],
+    answer: [1, 2, 3]
+  },
+  {
+    question: "10、关于\"新三民主义\"下列说法正确的有(     )",
+    options: [
+      "A、提出民主权利应\"为一般平民所共有\"",
+      "B、在民族主义中增加了反帝的内容",
+      "C、提出要改善工农的生活状况",
+      "D、与中共在民主革命阶段的纲领基本一致"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "11、新文化运动中宣传十月革命的著作有（    ）",
+    options: [
+      "A、《我的马克思主义观》",
+      "B、《法俄革命之比较观》",
+      "C、《庶民的胜利》",
+      "D、《 Bolshevism 的胜利》"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "12、新文化运动的基本口号是（     ）",
+    options: [
+      "A、独立",
+      "B、富强",
+      "C、民主",
+      "D、科学"
+    ],
+    answer: [2, 3]
+  },
+  {
+    question: "13、北伐战争要推翻的北洋军阀是（     ）",
+    options: [
+      "A、段祺瑞",
+      "B、吴佩孚",
+      "C、孙传芳",
+      "D、张作霖"
+    ],
+    answer: [1, 2, 3]
+  },
+  {
+    question: "14、下列选项中，属于早期新文化运动主要内容的是（    ）",
+    options: [
+      "A、提倡新文学，反对旧文学",
+      "B、提倡民主和科学，反对迷信和愚昧",
+      "C、提倡个性解放，反对封建礼教",
+      "D、主张实行文学革命"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "15、中共一大选出了党的领导机构——中央局，其成员有（  ）",
+    options: [
+      "A、毛泽东",
+      "B、陈独秀",
+      "C、李达",
+      "D、张国焘"
+    ],
+    answer: [1, 2, 3]
+  },
+  {
+    question: "16、大革命失败的原因包括（   ）",
+    options: [
+      "A、反革命力量的强大、资产阶级发生严重的动摇、统一战线出现剧烈的分化",
+      "B、共产国际及其代表的错误指导",
+      "C、蒋介石集团和汪精卫集团先后叛变革命",
+      "D、中国共产党犯了以陈独秀为代表的右倾机会主义错误"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "17、1921 年 7 月召开的中国共产党第一次全国代表大会的主要内容有（  ）",
+    options: [
+      "A、确定党的名称为中国共产党 、提出了党的纲领",
+      "B、决定要特别注意组织工人，以共产主义精神教育他们",
+      "C、选举产生了由陈独秀、张国焘、李达组成的党的领导机构",
+      "D、正式宣告了中国共产党的成立"
+    ],
+    answer: [0, 1, 3]
+  },
+  {
+    question: "18、1922 年 7 月召开的中国共产党第二次全国代表大会的主要内容有（  ）",
+    options: [
+      "A、选举产生了由陈独秀、张国焘、李达组成的党的领导机构",
+      "B、提出了反帝反封建的民主革命的纲领",
+      "C、党的最高纲领是实现社会主义、共产主义",
+      "D、当前阶段的纲领是\"打倒军阀，推翻国际帝国主义的压迫，统一中国为真正的民主共和国。"
+    ],
+    answer: [1, 2, 3]
+  },
+  {
+    question: "19、中国国民党第一次全国代表大会对三民主义作出的新解释有（   ）",
+    options: [
+      "A、在民族主义中突出了\"反帝\"的内容，强调对外实行中华民族的独立",
+      "B、主张国内各民族一律平等",
+      "C、在民权主义中强调了民主权利应\"为一般平民所共有\"，不应为\"少数人所得而私\"",
+      "D、在民生主义中则提出了\"平均地权\"和\"节制资本\"两大原则"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "20、五四运动是中国新民主主义革命的开端，因为（    ）",
+    options: [
+      "A、无产阶级以独立姿态登上政治舞台",
+      "B、发生在俄国十月社会主义革命之后，属于世界无产阶级革命一部分",
+      "C、是反帝反封建的革命运动",
+      "D、具有初步共产主义思想的知识分子起了领导作用"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "21、第一次国共合作得以实现的条件有（    ）",
+    options: [
+      "A、中国共产党需要团结各种力量作为革命同盟军",
+      "B、中国国民党在当时各政党中\"比较是革命的民主派\"",
+      "C、共产国际提出了实行国共合作的建议",
+      "D、\"打倒列强除军阀\"成为全国人民的共同愿望"
+    ],
+    answer: [0, 1, 2, 3]
+  }
+];
+
+const judgeQuiz = [ 
+  {
+    question: "1、中国共产党第一次提出了反帝反封建的民主革命的纲领，为中国人民指出了明确的斗争目标。",
+    answer: true
+  },
+  {
+    question: "2、中国的工人阶级人数不多，但在五四运动中发挥了决定性的作用。",
+    answer: true
+  },
+  {
+    question: "3、从1919年五四运动到1949年新中国成立以前这个时期，中国的社会性质仍然是半殖民地半封建社会。",
+    answer: true
+  },
+  {
+    question: "4、五四运动促进了马克思主义在中国的传播及其与中国工人运动的结合。",
+    answer: true
+  },
+  {
+    question: "5、五四运动完成了反帝反封建的革命任务。",
+    answer: false
+  },
+  {
+    question: "6、新文化运动标志着中国新民主主义革命的开端。",
+    answer: false
+  },
+  {
+    question: "7、中共“二大”制定了彻底的反帝反封建的民主革命纲领。",
+    answer: true
+  },
+  {
+    question: "8、第一次国共合作正式形成的标志是国民党一大的召开。",
+    answer: true
+  },
+  {
+    question: "9、第一次国共合作正式形成的标志是中共二大的召开。",
+    answer: false
+  },
+  {
+    question: "10、大革命后期中共中央领导机关犯了右倾机会主义错误。",
+    answer: true
+  },
+  {
+    question: "11、李大钊是中国的第一个马克思主义者。",
+    answer: true
+  },
+  {
+    question: "12、五四运动的直接导火线是北洋军阀政府的黑暗统治。",
+    answer: false
+  },
+  {
+    question: "13、新民主主义革命开始的标志是中国共产党的建立。",
+    answer: false
+  },
+  {
+    question: "14、1925年，以五卅运动为起点，掀起了全国范围的大革命风暴。",
+    answer: true
+  },
+  {
+    question: "15、中国最早接受和宣传马克思主义的先进分子是毛泽东。",
+    answer: false
+  },
+  {
+    question: "16、第一个在中国比较系统地阐述马克思主义唯物史观、政治经济学和科学社会主义基本原理的作者和作品是李大钊的《我的马克思主义观》。",
+    answer: true
+  },
+  {
+    question: "17、大革命失败后，蒋介石建立了南京国民政府，中国社会性质由此发生了根本的变化。",
+    answer: false
+  },
+  {
+    question: "18、中国共产党一开始就是一个以马克思列宁主义理论为基础的党。",
+    answer: true
+  },
+  {
+    question: "19、大革命时提出反对帝国主义、反对军阀口号的是国民党。",
+    answer: true
+  },
+  {
+    question: "20、第一次国共合作后的大革命是中国历史上空前广泛而深刻的群众运动。",
+    answer: true
+  },
+  {
+    question: "21、中国共产党是第一次国共合作的倡导者和统一战线的领导者。",
+    answer: true
+  }
+];
+
+
+
+  let currentType = 'single'; // 'single', 'multi', 'judge'
+  let current = 0;
+  let multiSelected = []; // 多选题已选项
+
+  function renderQuestion() {
+    let q;
+    if (currentType === 'single') {
+      q = quiz[current];
+    } else if (currentType === 'multi') {
+      q = multiQuiz[current];
+    } else if (currentType === 'judge') {
+      q = judgeQuiz[current];
+    }
+
+    document.getElementById("question").innerText = q.question;
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    if (currentType === 'judge') {
+      ["正确", "错误"].forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkJudgeAnswer(index === 0, div);
+        optionsDiv.appendChild(div);
+      });
+    } else if (currentType === 'multi') {
+      multiSelected = [];
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => toggleMultiSelect(div, index);
+        optionsDiv.appendChild(div);
+      });
+      // 添加放大且居中的提交按钮
+      const submitBtn = document.createElement("button");
+      submitBtn.innerText = "提交";
+      submitBtn.className = "multi-submit-btn";
+      submitBtn.onclick = checkMultiAnswer;
+      optionsDiv.appendChild(submitBtn);
+    } else {
+      // 单选
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkAnswer(index, div);
+        optionsDiv.appendChild(div);
+      });
+    }
+  }
+
+  function toggleMultiSelect(div, index) {
+    if (multiSelected.includes(index)) {
+      multiSelected = multiSelected.filter(i => i !== index);
+      div.classList.remove("selected");
+    } else {
+      multiSelected.push(index);
+      div.classList.add("selected");
+    }
+  }
+
+  function checkMultiAnswer() {
+    const correct = multiQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      // 提交后，所有正确选项变绿，其他不变色
+      if (correct.includes(i)) {
+        opt.classList.add("correct");
+      }
+      opt.classList.remove("selected");
+    });
+    // 禁用提交按钮
+    const btn = document.querySelector(".multi-submit-btn");
+    if (btn) btn.disabled = true;
+  }
+
+  function checkAnswer(index, el) {
+    let correct = quiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if (i === correct) opt.classList.add("correct");
+      else if (i === index) opt.classList.add("wrong");
+    });
+  }
+
+  function checkJudgeAnswer(isTrue, el) {
+    let correct = judgeQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if ((i === 0 && correct) || (i === 1 && !correct)) {
+        opt.classList.add("correct");
+      } else if ((i === 0 && !correct && isTrue) || (i === 1 && correct && !isTrue)) {
+        opt.classList.add("wrong");
+      }
+    });
+  }
+
+  function showAnswer() {
+    if (currentType === 'single') {
+      const correctIndex = quiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (i === correctIndex) opt.classList.add("correct");
+      });
+    } else if (currentType === 'multi') {
+      const correct = multiQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (correct.includes(i)) opt.classList.add("correct");
+      });
+      const btn = document.querySelector("#options button");
+      if (btn) btn.disabled = true;
+    } else if (currentType === 'judge') {
+      let correct = judgeQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if ((i === 0 && correct) || (i === 1 && !correct)) {
+          opt.classList.add("correct");
+        }
+      });
+    }
+  }
+
+  function nextQuestion() {
+    if (currentType === 'single') {
+      if (current < quiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'multi';
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'multi') {
+      if (current < multiQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'judge';
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'judge') {
+      if (current < judgeQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      }
+    }
+  }
+
+  function prevQuestion() {
+    if (current > 0) {
+      current--;
+      renderQuestion();
+    } else if (currentType === 'multi') {
+      currentType = 'single';
+      current = quiz.length - 1;
+      renderQuestion();
+    } else if (currentType === 'judge') {
+      currentType = 'multi';
+      current = multiQuiz.length - 1;
+      renderQuestion();
+    }
+  }
+
+  renderQuestion();
+</script>
+
+</body>
+</html>

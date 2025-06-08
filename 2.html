@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>近现代史刚要第二章</title>
+  <style>
+    body { font-family: sans-serif; }
+    .modal {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: white; padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      width: 400px; border-radius: 10px;
+    }
+    .option {
+      margin: 8px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s, color 0.2s;
+      text-align: left;
+    }
+    .option.selected {
+      background-color: #444 !important;
+      color: #fff !important;
+      border-color: #444 !important;
+    }
+    .option.correct {
+      background-color: #43a047 !important;
+      color: #fff !important;
+      border-color: #43a047 !important;
+    }
+    .option.wrong {
+      background-color: #ffcaca;
+    }
+    .buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .multi-submit-btn {
+      display: block;
+      margin: 32px auto 0 auto;
+      background: linear-gradient(to right, #4a00e0, #8e2de2);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 15px;
+      font-size: 0.7rem;
+      font-weight: 300;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(142, 45, 226, 0.2);
+    }
+    .multi-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<div class="modal" id="quizModal">
+  <div id="question"></div>
+  <div id="options"></div>
+  <div class="buttons">
+    <button onclick="prevQuestion()">上一题</button>
+    <button onclick="showAnswer()">不会</button>
+    <button onclick="nextQuestion()">下一题</button>
+  </div>
+</div>
+
+<script>
+
+    
+const quiz = [
+  {
+    question: "1、中国近代历史上第一个比较系统地阐述发展资本主义的纲领是（   ）",
+    options: [
+      "A、《四洲志》",
+      "B、《海国图志》",
+      "C、《资政新篇》",
+      "D、《盛世危言》"
+    ],
+    answer: 2  // C、《资政新篇》
+  },
+  {
+    question: "2、最能体现太平天国社会理想和这次农民起义特色的纲领性文件是(    )",
+    options: [
+      "A、《天朝田亩制度》",
+      "B、《资政新篇》",
+      "C、《原道觉世训》",
+      "D、《原道醒世训》"
+    ],
+    answer: 0  // A、《天朝田亩制度》
+  },
+  {
+    question: "3、太平天国运动中农民阶级局限性表现的最为突出．对其失败影响最大的是（     ）",
+    options: [
+      "A、利用宗教组织发动群众",
+      "B、《天朝田亩制度》中的分配方案",
+      "C、天京事变的发生",
+      "D、定都天京，偏安江南"
+    ],
+    answer: 2  // C、天京事变的发生
+  },
+  {
+    question: "4、《资政新篇》的内容\"新\"在（     ）",
+    options: [
+      "A、主张发展资本主义",
+      "B、主张平均分配土地",
+      "C、主张军令政令统一",
+      "D、主张严禁鸦片"
+    ],
+    answer: 0  // A、主张发展资本主义
+  },
+  {
+    question: "5、李大钊说：\"太平天国禁止了鸦片，却采用了宗教；不建设民国，而建设天国，这是他们失败的一个重要原因\"，这段话是指太平天国（   ）",
+    options: [
+      "A、没有实行宗教改革",
+      "B、缺乏科学的理论指导",
+      "C、没有彻底的革命精神",
+      "D、没有充分的发动群众"
+    ],
+    answer: 1  // B、缺乏科学的理论指导
+  },
+  {
+    question: "6、中国旧式农民战争的最高峰是(       )",
+    options: [
+      "A、义和团运动",
+      "B、三元里人民抗英斗争",
+      "C、太平天国运动",
+      "D、反教会斗争"
+    ],
+    answer: 2  // C、太平天国运动
+  },
+  {
+    question: "7、天平天国农民战争后期颁布的政纲是（     ）",
+    options: [
+      "A、《五四指示》",
+      "B、《资政新篇》",
+      "C、《中国土地法大纲》",
+      "D、《临时约法》"
+    ],
+    answer: 1  // B、《资政新篇》
+  },
+  {
+    question: "8、太平天国由盛转衰的转折点是(     )",
+    options: [
+      "A、永安建制",
+      "B、北伐失利",
+      "C、天京事变",
+      "D、洪秀全病逝"
+    ],
+    answer: 2  // C、天京事变
+  },
+  {
+    question: "9、太平天国后期，提出《资政新篇》改革方案的是(      )",
+    options: [
+      "A、洪秀全",
+      "B、杨秀清",
+      "C、洪仁轩",  // 注：原文为“洪仁轩”，应为“洪仁玕”
+      "D、石达开"
+    ],
+    answer: 2  // C、洪仁轩（洪仁玕）
+  },
+  {
+    question: "10、天京事变说明的最基本道理是(      )",
+    options: [
+      "A、农民阶级的领袖缺乏革命的进取心",
+      "B、农民政权内部的斗争不可避免",
+      "C、农民阶级绝对不是一个先进的阶级",
+      "D、小农经济的分散性决定了农民阶级不能形成坚强的领导核心"
+    ],
+    answer: 3  // D、小农经济的分散性决定了农民阶级不能形成坚强的领导核心
+  },
+  {
+    question: "11、太平天国运动失败的根本原因是(      )",
+    options: [
+      "A、旧式农民战争的局限性",
+      "B、拜上帝教不符合中国国情",
+      "C、在军事策略上屡犯错误",
+      "D、对封建王朝打击空前沉重"
+    ],
+    answer: 0  // A、旧式农民战争的局限性
+  },
+  {
+    question: "12、最早提出在中国发展资本主义方案的是（   ）",
+    options: [
+      "A、洪仁玕",
+      "B、严复",
+      "C、康有为",
+      "D、谭嗣同"
+    ],
+    answer: 0  // A、洪仁玕
+  },
+  {
+    question: "13、《资政新篇》较之《天朝田亩制度》更具有历史的进步性,主要是指它(  )",
+    options: [
+      "A、更加鲜明地提出不许外邦人干涉中国内政",
+      "B、明确提出要以法治国,由公众选举官吏",
+      "C、主张学习西方,最早提出在中国发展资本主义的方案",
+      "D、促使中国近代第一次思想解放潮流的发生"
+    ],
+    answer: 2  // C、主张学习西方,最早提出在中国发展资本主义的方案
+  },
+  {
+    question: "14、洋务运动时期，主要培养翻译人才的学校是（    ）。",
+    options: [
+      "A、京师大学堂",
+      "B、工艺学堂",
+      "C、船政学堂",
+      "D、京师同文馆"
+    ],
+    answer: 3  // D、京师同文馆
+  },
+  {
+    question: "15、下列关于洋务运动论述不正确的是(     )",
+    options: [
+      "A、洋务运动是一场封建统治者的自救运动",
+      "B、洋务运动客观上促进了中国资本主义的发展",
+      "C、洋务运动是一场资产阶级性质的政治改革运动",
+      "D、洋务运动失败是必然的"
+    ],
+    answer: 2  // C、洋务运动是一场资产阶级性质的政治改革运动（不正确，因为洋务运动本质是封建自救运动）
+  },
+  {
+    question: "16、对洋务运动的下列评价中，不正确的是（     ）",
+    options: [
+      "A、客观上刺激中国资本主义的发展",
+      "B、对外国经济的扩张起了些抵制作用",
+      "C、使中国走上资本主义道路",
+      "D、引进西方先进技术，培养了一批科技人才"
+    ],
+    answer: 2  // C、使中国走上资本主义道路（不正确，洋务运动未改变社会性质）
+  },
+  {
+    question: "17、“上海轮船招商局创办后三年内，外轮就损失了1300万两，湖北官办织布局创办后，江南海关每年洋布进口减少十万匹。”这说明洋务运动（   ）",
+    options: [
+      "A、使中国走上了富强的道路",
+      "B、为民族工业的发展奠定了基础",
+      "C、培养了一批近代科技人才",
+      "D、对外国经济势力扩张起了一些抵制作用"
+    ],
+    answer: 3  // D、对外国经济势力扩张起了一些抵制作用
+  },
+  {
+    question: "18、从中国近现代历史看，洋务运动（     ）",
+    options: [
+      "A、建立了近代化的政治制度",
+      "B、使中国走上了富强之路",
+      "C、产生了中国第一批近代企业和技术人员",
+      "D、抵御列强侵略，维护清朝统治"
+    ],
+    answer: 2  // C、产生了中国第一批近代企业和技术人员
+  },
+  {
+    question: "19、洋务派的主张是（     ）",
+    options: [
+      "A、利用西方先进科学技术来维护清朝统治",
+      "B、利用西方先进技术抵抗西方侵略",
+      "C、利用西方先进思想改造中国社会",
+      "D、引进西方先进制度改造中国社会"
+    ],
+    answer: 0  // A、利用西方先进科学技术来维护清朝统治
+  },
+  {
+    question: "20、19世纪60年代后，封建统治阶级中的洋务派开展了洋务运动，洋务运动的指导思想是(    )",
+    options: [
+      "A、中学为体、西学为用",
+      "B、师夷长技以制夷",
+      "C、物竞天择、适者生存",
+      "D、变法维新以救亡图存"
+    ],
+    answer: 0  // A、中学为体、西学为用
+  },
+  {
+    question: "21、对洋务派兴办洋务事业的指导思想最先作出比较完整表述的是（   ）",
+    options: [
+      "A、冯桂芬",
+      "B、马建忠",
+      "C、王韬",
+      "D、郑观应"
+    ],
+    answer: 0  // A、冯桂芬
+  },
+  {
+    question: "22、洋务派兴办洋务事业的主要目的是(       )",
+    options: [
+      "A、发展中国的资本主义经济",
+      "B、巩固清王朝的封建统治",
+      "C、学习西方资本主义的制度",
+      "D、捍卫国家的主权独立和民族尊严"
+    ],
+    answer: 1  // B、巩固清王朝的封建统治
+  },
+  {
+    question: "23、近代中国派遣第一批留学生是在(     )",
+    options: [
+      "A、洋务运动时期",
+      "B、戊戌维新时期",
+      "C、清末“新政”时期",
+      "D、辛亥革命时期"
+    ],
+    answer: 0  // A、洋务运动时期
+  },
+  {
+    question: "24、洋务运动时期最早创办的翻译学堂是(    )",
+    options: [
+      "A、京师同文馆",
+      "B、广方言馆",
+      "C、译书局",
+      "D、译书馆"
+    ],
+    answer: 0  // A、京师同文馆
+  },
+  {
+    question: "25、戊戌政变后，“新政”中得以保留的内容是（     ）",
+    options: [
+      "A、提倡官民上书言事",
+      "B、开办京师大学堂",
+      "C、设立农工商总局",
+      "D、废除八股取士"
+    ],
+    answer: 1  // B、开办京师大学堂
+  },
+  {
+    question: "26、清末诗人丘逢甲在《春愁》中写道：\"春愁难遣强看山，往事惊心泪欲潸。四百万人同一哭，去年今日割台湾。\"诗中\"往事\"是指什么战争的失败（   ）",
+    options: [
+      "A、鸦片战争",
+      "B、第二次鸦片战争",
+      "C、甲午中日战争",
+      "D、八国联军侵华战争"
+    ],
+    answer: 2  // C、甲午中日战争
+  },
+  {
+    question: "27、1895年有人题联：\"万寿无疆，普天同庆；三军败绩，割地求和\"。其中\"割地\"指（    ）",
+    options: [
+      "A、割九龙司地方一区给英国",
+      "B、割香港岛给英国",
+      "C、割台湾．澎湖列岛给日本",
+      "D、划定北京东交民巷为\"使馆界\""
+    ],
+    answer: 2  // C、割台湾．澎湖列岛给日本
+  },
+  {
+    question: "28、“三国干涉还辽\"事件，其实质反映了（    ）",
+    options: [
+      "A、日本实力不如西方列强",
+      "B、列强在争夺中国权益上有矛盾",
+      "C、德俄法三国反对日本侵犯中国领土主权",
+      "D、三国乘机削弱日本实力"
+    ],
+    answer: 1  // B、列强在争夺中国权益上有矛盾
+  },
+  {
+    question: "29、中国民族资产阶级第一次登上政治舞台是在（     ）",
+    options: [
+      "A、洋务运动",
+      "B、戊戌维新",
+      "C、辛亥革命",
+      "D、五四运动"
+    ],
+    answer: 1  // B、戊戌维新
+  },
+  {
+    question: "30、下列关于戊戌维新运动论述不正确的是(     )",
+    options: [
+      "A、戊戌维新运动是一次爱国救亡运动",
+      "B、戊戌维新运动是一场资产阶级性质的政治改革运动",
+      "C、戊戌维新运动是一场思想启蒙运动",
+      "D、戊戌维新运动的目的是为了推翻清政府的统治"
+    ],
+    answer: 3  // D、戊戌维新运动的目的是为了推翻清政府的统治（不正确，目的是改良）
+  },
+  {
+    question: "31、戊戌维新运动的突出历史功绩在于(      )",
+    options: [
+      "A、挽救民族危亡",
+      "B、推行了资本主义的政治改革",
+      "C、促进了思想启蒙",
+      "D、极大地发展了资本主义经济"
+    ],
+    answer: 2  // C、促进了思想启蒙
+  },
+  {
+    question: "32、在甲午战争后，通过翻译《天演论》为戊戌维新运动提供理论根据的是(   )",
+    options: [
+      "A、严复",
+      "B、康有为",
+      "C、梁启超",
+      "D、谭嗣同"
+    ],
+    answer: 0  // A、严复
+  },
+  {
+    question: "33、戊戌维新运动开始的标志是(      )",
+    options: [
+      "A、维新派与守旧派的论战",
+      "B、“公车上书”",
+      "C、\"中体西用\"思想的提出",
+      "D、\"明定国是\"诏书的颁布"
+    ],
+    answer: 1  // B、“公车上书”
+  },
+  {
+    question: "34、维新运动兴起的时代背景是(    )",
+    options: [
+      "A、中法战争、福建水师的覆没",
+      "B、甲午战争惨败，《马关条约》的签订",
+      "C、帝国主义列强抢劫、焚烧圆明园",
+      "D、《辛丑条约》的签订"
+    ],
+    answer: 1  // B、甲午战争惨败，《马关条约》的签订
+  },
+  {
+    question: "35、维新派与洋务派在学习西方问题上的主要不同之处是（    ）",
+    options: [
+      "A、是否学习西方的科学技术",
+      "B、是否使用大机器生产",
+      "C、是否创办新式学堂",
+      "D、是否学习西方的政治制度"
+    ],
+    answer: 3  // D、是否学习西方的政治制度
+  },
+  {
+    question: "36、下列对戊戌变法的评价中，不正确的是（     ）",
+    options: [
+      "A、是中国近代史上首次思想解放运动",
+      "B、是一次资产阶级的改良运动",
+      "C、是一次救亡图存的爱国运动",
+      "D、具有广泛群众基础的变法运动"
+    ],
+    answer: 3  // D、具有广泛群众基础的变法运动（不正确，缺乏群众基础）
+  }
+];
+
+const multiQuiz = [
+  {
+    question: "1、太平天国政权颁布的纲领有（      ）",
+    options: [
+      "A、《天朝田亩制度》",
+      "B、《万大洪告示》",
+      "C、《劝世良言》",
+      "D、《资政新篇》"
+    ],
+    answer: [0, 3] // A、D
+  },
+  {
+    question: "2、与以往的农民战争相比，太平天国运动新的特点表现在（    ）",
+    options: [
+      "A、运动规模空前巨大",
+      "B、反封建同时反侵略",
+      "C、《天朝田亩制度》的平均主义理想",
+      "D、《资政新篇》的资本主义色彩"
+    ],
+    answer: [1, 3] // B、D
+  },
+  {
+    question: "3、太平天国运动失败的原因主要在于（      ）",
+    options: [
+      "A、农民阶级不是新生产力的代表者",
+      "B、没有科学的指导思想",
+      "C、对侵略者本质认识不清",
+      "D、领导集团内部的腐败"
+    ],
+    answer: [0, 1, 2, 3] // A、B、C、D
+  },
+  {
+    question: "4、太平天国起义是中国旧式农民战争的最高峰，主要因为 (   )",
+    options: [
+      "A、其规模和延续时间均属空前",
+      "B、建立了与清政府对立的政权",
+      "C、制定了比较完整的资产阶级民主革命纲领",
+      "D、对封建王朝的打击空前严重"
+    ],
+    answer: [0, 1, 3] // A、B、D
+  },
+  {
+    question: "5、太平天国起义的历史意义是（     ）",
+    options: [
+      "A、强烈撼动了清政府的统治根基",
+      "B、是中国旧式农民战争的最高峰",
+      "C、冲击了孔子和儒家经典的正统权威",
+      "D、有力地打击了外国侵略势力"
+    ],
+    answer: [0, 1, 2, 3] // A、B、C、D
+  },
+  {
+    question: "6、洋务派举办的洋务事业主要有（  ）",
+    options: [
+      "A、兴办近代企业",
+      "B、建立新式海陆军",
+      "C、创办新式学堂",
+      "D、派遣留学生"
+    ],
+    answer: [0, 1, 2, 3] // A、B、C、D
+  },
+  {
+    question: "7、洋务运动中创办的新式学堂主要有（     ）",
+    options: [
+      "A、翻译学堂",
+      "B、工艺学堂",
+      "C、军事学堂",
+      "D、法政学堂"
+    ],
+    answer: [0, 1, 2] // A、B、C
+  },
+  {
+    question: "8、洋务派兴办洋务事业的目的是（   ）",
+    options: [
+      "A、购买和制造洋枪洋炮以镇压农民起义",
+      "B、加强海防、边防",
+      "C、在中国建立新政府",
+      "D、挽救清政府的统治危机"
+    ],
+    answer: [0, 1, 3] // A、B、D
+  },
+  {
+    question: "9、洋务派在清朝地方官吏中的主要代表人物有（     ）",
+    options: [
+      "A、奕䜣",
+      "B、李鸿章",
+      "C、左宗棠",
+      "D、张之洞"
+    ],
+    answer: [1, 2, 3] // B、C、D
+  },
+  {
+    question: "10、洋务运动失败的主要原因有（     ）",
+    options: [
+      "A、具有封建性",
+      "B、对外国具有依赖性",
+      "C、管理具有腐朽性",
+      "D、触动了封建体制，遭到顽固派的反对"
+    ],
+    answer: [0, 1, 2] // A、B、C
+  },
+  {
+    question: "11、维新变法运动的代表人物有（      ）",
+    options: [
+      "A、康有为",
+      "B、梁启超",
+      "C、谭嗣同",
+      "D、张之洞"
+    ],
+    answer: [0, 1, 2] // A、B、C
+  },
+  {
+    question: "12、戊戌维新运动在中国近代史上的重大历史意义，主要体现在（    ）",
+    options: [
+      "A、是一场反帝反封建的革命运动",
+      "B、是一场爱国救亡运动",
+      "C、是一场资产阶级性质的政治改革运动",
+      "D、是一场思想启蒙运动"
+    ],
+    answer: [1, 2, 3] // B、C、D
+  },
+  {
+    question: "13、1898年的“百日维新”如昙花一现，只经历103天就夭折了。谭嗣同在慷慨就义前仰天长叹：“有心杀贼，无力回天”。维新派“无力回天”的原因主要是（    ）",
+    options: [
+      "A、他们不敢触动封建主义的经济基础",
+      "B、他们遭到了以慈禧太后为首的强大的守旧势力的反击和镇压",
+      "C、他们惧怕人民群众，把改革的全部希望寄托在一个没有实权的皇帝身上",
+      "D、他们提倡全面学习“西学”，彻底否定“中学”"
+    ],
+    answer: [0, 1, 2] // A、B、C
+  },
+  {
+    question: "14、对国家出路早期探索中先后提出了自己的主张和方案的阶级主要有（   ）",
+    options: [
+      "A、农民阶级",
+      "B、地主阶级洋务派",
+      "C、资产阶级维新派",
+      "D、地主阶级顽固派"
+    ],
+    answer: [0, 1, 2] // A、B、C
+  },
+  {
+    question: "15、维新派与守旧派的论战内容主要有（    ）",
+    options: [
+      "A、要不要变法",
+      "B、要不要兴民权、设议院，实行君主立宪",
+      "C、要不要推翻帝制",
+      "D、要不要废八股、改科举和兴西学"
+    ],
+    answer: [0, 1, 3] // A、B、D
+  },
+  {
+    question: "16、1895年，康有为联合在京参加会试的举人共同发起的\"公车上书\"要求（  ）",
+    options: [
+      "A、拒和",
+      "B、迁都",
+      "C、变法",
+      "D、练兵"
+    ],
+    answer: [0, 1, 2, 3] // A、B、C、D
+  },
+  {
+    question: "17、资产阶级维新派宣传维新主张的行动主要有（   ）",
+    options: [
+      "A、向皇帝上书",
+      "B、著书立说办报纸",
+      "C、介绍外国变法的经验教训",
+      "D、办学会设学堂"
+    ],
+    answer: [0, 1, 2, 3] // A、B、C、D
+  }
+];
+
+const judgeQuiz = [
+  {
+    question: "1、1851年1月，洪秀全率领拜上帝教教众在广西省桂平县金田村发动起义，建号太平天国。",
+    answer: true
+  },
+  {
+    question: "2、1853年3月，太平军攻克南京，改名天京，定为太平天国首都。",
+    answer: true
+  },
+  {
+    question: "3、最能体现太平天国社会理想和这次农民起义特色的纲领性文件是《天朝田亩制度》",
+    answer: true
+  },
+  {
+    question: "4、最能体现太平天国社会理想的纲领性文件是《资政新篇》",
+    answer: false  // 应为《天朝田亩制度》
+  },
+  {
+    question: "5、中国近代最早的带有资本主义色彩的社会方案是《资政新篇》",
+    answer: true
+  },
+  {
+    question: "6、中国近代最早的带有资本主义色彩的社会方案是《天朝田亩制度》",
+    answer: false  // 应为《资政新篇》
+  },
+  {
+    question: "7、1864年太平天国农民运动失败。失败的根本原因是农民阶级的局限性，换言之，缺乏先进的阶级的领导。",
+    answer: true
+  },
+  {
+    question: "8、太平天国失败的根本原因是清政府和洋枪队的联合绞杀",
+    answer: false  // 根本原因是农民阶级局限性
+  },
+  {
+    question: "9、洋务运动中，洋务派与顽固派之间的根本分歧在于要不要学习西方的先进生产技术。",
+    answer: true
+  },
+  {
+    question: "10、洋务运动是在19世纪60年代初清政府镇压太平天国起义的过程中和第二次鸦片战争结束后兴起的。",
+    answer: true
+  },
+  {
+    question: "11、对洋务派兴办洋务事业的指导思想最先作出比较完整表述的是冯桂芬。",
+    answer: true  // 冯桂芬在《校邠庐抗议》中提出
+  },
+  {
+    question: "12、洋务派兴办军事工业的直接目的是镇压国内农民起义，同时也有抵御外国侵略的目的。",
+    answer: true
+  },
+  {
+    question: "13、洋务派举办的民用企业的形式有官办、官督商办（采用最多的形式）、官商合办。",
+    answer: true
+  },
+  {
+    question: "14、洋务运动失败的标志为中日甲午战争中北洋水师的全军覆没。",
+    answer: true  // 1895年北洋水师覆灭标志洋务运动失败
+  },
+  {
+    question: "15、戊戌维新运动是一次爱国救亡运动。",
+    answer: true
+  },
+  {
+    question: "16、洋务运动、戊戌变法都是中国人学习西方的实践活动。",
+    answer: true
+  },
+  {
+    question: "17、戊戌维新是一场资产阶级性质的改良运动。",
+    answer: true
+  },
+  {
+    question: "18、洋务派兴办洋务新政,是要使中国朝着独立的资本主义方向发展。",
+    answer: false  // 目的是维护封建统治
+  },
+  {
+    question: "19、戊戌维新运动的指导思想是“中学为体，西学为用”。",
+    answer: false  // 指导思想是维新变法思想
+  },
+  {
+    question: "20、洋务运动的指导思想是“中学为体，西学为用”。",
+    answer: true
+  },
+  {
+    question: "21、《天朝田亩制度》的颁布使太平天国起义具有了不同于以往农民战争的新的历史特点。",
+    answer: false  // 新特点应是反侵略和《资政新篇》
+  },
+  {
+    question: "22、太平天国把信奉上帝的西方人视为“洋兄弟”，说明他们对于西方资本主义侵略者缺乏理性认识。",
+    answer: true
+  },
+  {
+    question: "23、《资政新篇》是中国近代历史上第一个比较系统的发展资本主义的方案。",
+    answer: true
+  },
+  {
+    question: "24、戊戌维新运动是一场资产阶级性质的政治改良运动，更是一场思想启蒙运动。",
+    answer: true
+  },
+  {
+    question: "25、戊戌维新运动的兴起说明中国资产阶级开始登上政治舞台。",
+    answer: true
+  },
+  {
+    question: "26、戊戌维新运动的失败，说明在半殖民地半封建的中国，企图通过统治者走自上而下的改良的道路，是根本行不通的。",
+    answer: true
+  },
+  {
+    question: "27、农民是外国侵略者和本国封建统治者主要的压迫对象，也是反抗外国侵略者和本国封建统治者的主要力量。",
+    answer: true
+  }
+];
+
+  let currentType = 'single'; // 'single', 'multi', 'judge'
+  let current = 0;
+  let multiSelected = []; // 多选题已选项
+
+  function renderQuestion() {
+    let q;
+    if (currentType === 'single') {
+      q = quiz[current];
+    } else if (currentType === 'multi') {
+      q = multiQuiz[current];
+    } else if (currentType === 'judge') {
+      q = judgeQuiz[current];
+    }
+
+    document.getElementById("question").innerText = q.question;
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    if (currentType === 'judge') {
+      ["正确", "错误"].forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkJudgeAnswer(index === 0, div);
+        optionsDiv.appendChild(div);
+      });
+    } else if (currentType === 'multi') {
+      multiSelected = [];
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => toggleMultiSelect(div, index);
+        optionsDiv.appendChild(div);
+      });
+      // 添加放大且居中的提交按钮
+      const submitBtn = document.createElement("button");
+      submitBtn.innerText = "提交";
+      submitBtn.className = "multi-submit-btn";
+      submitBtn.onclick = checkMultiAnswer;
+      optionsDiv.appendChild(submitBtn);
+    } else {
+      // 单选
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkAnswer(index, div);
+        optionsDiv.appendChild(div);
+      });
+    }
+  }
+
+  function toggleMultiSelect(div, index) {
+    if (multiSelected.includes(index)) {
+      multiSelected = multiSelected.filter(i => i !== index);
+      div.classList.remove("selected");
+    } else {
+      multiSelected.push(index);
+      div.classList.add("selected");
+    }
+  }
+
+  function checkMultiAnswer() {
+    const correct = multiQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      // 提交后，所有正确选项变绿，其他不变色
+      if (correct.includes(i)) {
+        opt.classList.add("correct");
+      }
+      opt.classList.remove("selected");
+    });
+    // 禁用提交按钮
+    const btn = document.querySelector(".multi-submit-btn");
+    if (btn) btn.disabled = true;
+  }
+
+  function checkAnswer(index, el) {
+    let correct = quiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if (i === correct) opt.classList.add("correct");
+      else if (i === index) opt.classList.add("wrong");
+    });
+  }
+
+  function checkJudgeAnswer(isTrue, el) {
+    let correct = judgeQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if ((i === 0 && correct) || (i === 1 && !correct)) {
+        opt.classList.add("correct");
+      } else if ((i === 0 && !correct && isTrue) || (i === 1 && correct && !isTrue)) {
+        opt.classList.add("wrong");
+      }
+    });
+  }
+
+  function showAnswer() {
+    if (currentType === 'single') {
+      const correctIndex = quiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (i === correctIndex) opt.classList.add("correct");
+      });
+    } else if (currentType === 'multi') {
+      const correct = multiQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (correct.includes(i)) opt.classList.add("correct");
+      });
+      const btn = document.querySelector("#options button");
+      if (btn) btn.disabled = true;
+    } else if (currentType === 'judge') {
+      let correct = judgeQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if ((i === 0 && correct) || (i === 1 && !correct)) {
+          opt.classList.add("correct");
+        }
+      });
+    }
+  }
+
+  function nextQuestion() {
+    if (currentType === 'single') {
+      if (current < quiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'multi';
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'multi') {
+      if (current < multiQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'judge';
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'judge') {
+      if (current < judgeQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      }
+    }
+  }
+
+  function prevQuestion() {
+    if (current > 0) {
+      current--;
+      renderQuestion();
+    } else if (currentType === 'multi') {
+      currentType = 'single';
+      current = quiz.length - 1;
+      renderQuestion();
+    } else if (currentType === 'judge') {
+      currentType = 'multi';
+      current = multiQuiz.length - 1;
+      renderQuestion();
+    }
+  }
+
+  renderQuestion();
+</script>
+
+</body>
+</html>

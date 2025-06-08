@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>近现代史刚要第八章</title>
+  <style>
+    body { font-family: sans-serif; }
+    .modal {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: white; padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      width: 400px; border-radius: 10px;
+    }
+    .option {
+      margin: 8px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s, color 0.2s;
+      text-align: left;
+    }
+    .option.selected {
+      background-color: #444 !important;
+      color: #fff !important;
+      border-color: #444 !important;
+    }
+    .option.correct {
+      background-color: #43a047 !important;
+      color: #fff !important;
+      border-color: #43a047 !important;
+    }
+    .option.wrong {
+      background-color: #ffcaca;
+    }
+    .buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .multi-submit-btn {
+      display: block;
+      margin: 32px auto 0 auto;
+      background: linear-gradient(to right, #4a00e0, #8e2de2);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 15px;
+      font-size: 0.7rem;
+      font-weight: 300;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(142, 45, 226, 0.2);
+    }
+    .multi-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<div class="modal" id="quizModal">
+  <div id="question"></div>
+  <div id="options"></div>
+  <div class="buttons">
+    <button onclick="prevQuestion()">上一题</button>
+    <button onclick="showAnswer()">不会</button>
+    <button onclick="nextQuestion()">下一题</button>
+  </div>
+</div>
+
+<script>
+
+const quiz = [
+  {
+    question: "1、中国进入社会主义社会的最主要的标志是：",
+    options: [
+      "A、社会主义改造的基本完成",
+      "B、新中国的成立",
+      "C、第一部宪法的颁布",
+      "D、全国人民第一次代表大会的召开"
+    ],
+    answer: 0
+  },
+  {
+    question: "2、中国共产党过渡时期总路线的主体是：",
+    options: [
+      "A、对个体农业的社会主义改造",
+      "B、对资本主义工商业的社会主义改造",
+      "C、对个体手工业的社会主义改造",
+      "D、实现国家的社会主义工业化"
+    ],
+    answer: 3
+  },
+  {
+    question: "3、没收官僚资本，具有民主革命和社会主义革命两重性质，其具有社会主义革命的性质，是从：",
+    options: [
+      "A、反对外国帝国主义的附庸的意义上看",
+      "B、反对中国的大资产阶级的意义上看",
+      "C、反对中国的买办资产阶级的意义上看",
+      "D、反对三座大山的经济基础的意义上看"
+    ],
+    answer: 1
+  },
+  {
+    question: "4、1949年中华人民共和国成立，标志着中国进入了",
+    options: [
+      "A、社会主义社会",
+      "B、新民主主义社会",
+      "C、资本主义社会",
+      "D、共产主义社会"
+    ],
+    answer: 1
+  },
+  {
+    question: "5、1953年9月，彭德怀在一份报告中说，抗美援朝战争的胜利证明：西方侵略者几百年来只要在东方一个海岸上架起几尊大炮就可霸占一个国家的时代一去不复返了。这场战争的胜利",
+    options: [
+      "A、结束了西方列强霸权主义的历史",
+      "B、打破了美国军队不可战胜的神话",
+      "C、奠定了民族独立人民解放的基础",
+      "D、赢得了近代以来中华民族反抗外敌入侵的第一次完全胜利"
+    ],
+    answer: 1
+  },
+  {
+    question: "6、新中国成立初期，针对党政干部中存在的腐化问题，中国共产党开展了",
+    options: [
+      "A、三查运动",
+      "B、三反运动",
+      "C、五反运动",
+      "D、四清运动"
+    ],
+    answer: 1
+  },
+  {
+    question: "7、党在过渡时期总路线最显著的特点是",
+    options: [
+      "A、实现工业和农业、手工业和资本主义工商业的社会主义改造",
+      "B、实现生产关系的社会主义改造",
+      "C、实现工业化",
+      "D、社会主义建设与改造同时并举"
+    ],
+    answer: 3
+  },
+  {
+    question: "8、对农业进行社会主义改造的途径是",
+    options: [
+      "A、公私合营",
+      "B、合作化",
+      "C、国家资本主义",
+      "D、和平赎买"
+    ],
+    answer: 1
+  },
+  {
+    question: "9、建国初期，国家对官僚资本采取的政策是",
+    options: [
+      "A、赎买",
+      "B、管制",
+      "C、没收",
+      "D、拍卖"
+    ],
+    answer: 2
+  },
+  {
+    question: "10、1950年，率领中国人民志愿军赴朝鲜，与朝鲜人民并肩反击美国侵略的司令员是",
+    options: [
+      "A、彭德怀",
+      "B、聂荣臻",
+      "C、刘伯承",
+      "D、贺龙"
+    ],
+    answer: 0
+  },
+  {
+    question: "11、中国历史上最深刻最伟大的社会变革，也是20世纪中国又一次划时代的历史巨变是",
+    options: [
+      "A、辛亥革命",
+      "B、新民主主义革命",
+      "C、社会主义基本制度的确立",
+      "D、社会主义改革"
+    ],
+    answer: 2
+  },
+  {
+    question: "12、首次明确规定人民代表大会制度为我国根本政治制度的法律文件是",
+    options: [
+      "A、《中国人民政治协商会议共同纲领》",
+      "B、《论十大关系》",
+      "C、1954年《中华人民共和国宪法》",
+      "D、1982年《中华人民共和国宪法》"
+    ],
+    answer: 2
+  },
+  {
+    question: "13、1953年中国共产党提出'一化三改'的过渡时期总路线，其中'一化'是指",
+    options: [
+      "A、社会主义现代化",
+      "B、农业合作化",
+      "C、社会主义工业化",
+      "D、科学技术现代化"
+    ],
+    answer: 2
+  },
+  {
+    question: "14、新中国成立以后的最初三年，社会主义国营经济的主要组成部分来自于",
+    options: [
+      "A、农业合作化",
+      "B、资本主义工商业的改造",
+      "C、没收官僚资本",
+      "D、没收外国在华企业"
+    ],
+    answer: 2
+  },
+  {
+    question: "15、1956年，中国对资本主义工商业进行社会主义改造期间，某资本家担任某厂的副厂长。一时间，工人议论纷纷。以下四种意见，惟一正确的是",
+    options: [
+      "A、他是资本家，怎么可以担任我们的副厂长",
+      "B、资本家是要剥削的，我们一起把他拉下马",
+      "C、工人阶级当家作主，他说的话我们不听",
+      "D、他懂业务，他说的对，我们还是要听的"
+    ],
+    answer: 3
+  },
+  {
+    question: "16、新中国成立之初的'过渡时期'是指",
+    options: [
+      "A、从建国到三大运动胜利",
+      "B、从建国到国民经济恢复",
+      "C、从建国到三大改造完成",
+      "D、从建国到一五计划完成"
+    ],
+    answer: 2
+  },
+  {
+    question: "17、中国民族资产阶级在社会主义改造时期仍然具有两面性，其表现为",
+    options: [
+      "A、革命性和妥协性",
+      "B、主动性和被动性",
+      "C、剥削工人的一面和接受改造的一面",
+      "D、进步性和顽固性"
+    ],
+    answer: 2
+  },
+  {
+    question: "18、标志着社会主义制度在农村初步建立的事件是",
+    options: [
+      "A、1952年，土地改革的完成",
+      "B、1956年，全国农业社会主义改造完成",
+      "C、1958年，开展人民公社化运动",
+      "D、1978年，实行家庭联产承包责任制"
+    ],
+    answer: 1
+  },
+  {
+    question: "19、1956年底社会主义制度在我国基本建立，这一结论的主要依据是",
+    options: [
+      "A、第一届全国人民代表大会召开",
+      "B、社会主义政治制度确立",
+      "C、第一个五年计划基本完成",
+      "D、公有制经济占主导地位"
+    ],
+    answer: 3
+  },
+  {
+    question: "20、20世纪50年代，我国推动国家政治民主建设的主要举措是",
+    options: [
+      "A、在工矿企业实行民主改革",
+      "B、建立人民代表大会制度",
+      "C、发动群众参加共产党的整风运动",
+      "D、成立全国政协"
+    ],
+    answer: 1
+  },
+  {
+    question: "21、新中国成立初期，为恢复国民经济，振兴民族工业，中国共产党和人民政府采取的措施不包括",
+    options: [
+      "A、建立社会主义性质的国营经济",
+      "B、接管私人资本主义企业",
+      "C、合理调整工商业",
+      "D、稳定物价统一财经"
+    ],
+    answer: 1
+  },
+  {
+    question: "22、从1949年10月1日中华人民共和国成立到1956年这七年，是",
+    options: [
+      "A、基本完成社会主义改造的时期",
+      "B、旧民主主义革命时期",
+      "C、新民主主义革命时期",
+      "D、社会主义时期"
+    ],
+    answer: 0
+  },
+  {
+    question: "23、从1956年社会主义改造基本完成到1966年'文化大革命'前夕，是",
+    options: [
+      "A、基本完成社会主义改造的十年",
+      "B、开始全面建设社会主义的十年",
+      "C、社会主义建设新时期的十年",
+      "D、新民主主义社会建设的十年"
+    ],
+    answer: 1
+  },
+  {
+    question: "24、中华人民共和国成立后，中国社会开始了",
+    options: [
+      "A、从旧民主主义向新民主主义的过渡",
+      "B、从资本主义向社会主义的过渡",
+      "C、从新民主主义向社会主义的过渡",
+      "D、从社会主义向共产主义的过渡"
+    ],
+    answer: 2
+  },
+  {
+    question: "25、中国在对资本主义工商业进行社会主义改造的过程中，在个别企业公私合营阶段，在利润分配上采取的政策是",
+    options: [
+      "A、统筹兼顾",
+      "B、劳资两利",
+      "C、公私兼顾",
+      "D、四马分肥"
+    ],
+    answer: 3
+  },
+  {
+    question: "26、中华人民共和国成立后的新民主主义社会属于",
+    options: [
+      "A、社会主义体系的过渡性质的社会",
+      "B、资本主义体系的过渡性质的社会",
+      "C、共产主义体系的过渡性质的社会",
+      "D、民主主义体系的过渡性质的社会"
+    ],
+    answer: 0
+  },
+  {
+    question: "27、新民主主义社会不是一个独立的社会形态，而是由新民主主义转变到社会主义的过渡性的社会形态。新民主主义社会存在着五种经济成分，其中，属于过渡形式的经济成分的是",
+    options: [
+      "A、国营经济和合作社经济",
+      "B、私人资本主义经济和国家资本主义经济",
+      "C、合作社经济和国家资本主义经济",
+      "D、个体经济和合作社经济"
+    ],
+    answer: 2
+  },
+  {
+    question: "28、新民主主义社会的五种经济成分中，处于十字路口的经济成分是",
+    options: [
+      "A、社会主义经济",
+      "B、半社会主义性质的合作社经济",
+      "C、个体经济",
+      "D、国家资本主义经济"
+    ],
+    answer: 2
+  },
+  {
+    question: "29、从1978年12月中共十一届三中全会召开以来至今，是",
+    options: [
+      "A、基本完成社会主义改造的时期",
+      "B、开始全面建设社会主义的时期",
+      "C、改革开放和社会主义现代化建设的新时期",
+      "D、新民主主义社会建设的时期"
+    ],
+    answer: 2
+  }
+];
+
+const multiQuiz = [
+  {
+    question: "1、中华人民共和国的成立，宣告中国人民当家作主的时代已经到来，中国历史由此开辟了一个新纪元。中华人民共和国的成立，标志着：",
+    options: [
+      "A、新民主主义革命取得基本的胜利",
+      "B、新民主主义社会在全国范围内的建立",
+      "C、半殖民地半封建社会的结束",
+      "D、我国社会进入了从新民主主义到社会主义的过渡时期"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "2、新中国成立后的最初三年，在着重完成民主革命的遗留任务的同时，社会主义革命的任务实际上也已经开始实行了，这主要表现在",
+    options: [
+      "A、没收官僚资本，确立社会主义国营经济的领导地位",
+      "B、开始将资本主义纳入国家资本主义的轨道",
+      "C、引导个体农民在土地改革后逐步走上互助合作的道路",
+      "D、选择社会主义工业化道路"
+    ],
+    answer: [0, 1, 2]
+  },
+  {
+    question: "3、下列关于新民主主义社会的说法正确的是",
+    options: [
+      "A、从新中国成立到社会主义改造完成，我国社会性质是新民主主义社会",
+      "B、它是独立的社会形态",
+      "C、它属于资本主义体系",
+      "D、它带有过渡性质"
+    ],
+    answer: [0, 3]
+  },
+  {
+    question: "4、新民主主义社会的基本矛盾是",
+    options: [
+      "A、国际上是新中国同帝国主义的矛盾",
+      "B、封建主义和人民大众的矛盾",
+      "C、国内是工人阶级和资产阶级的矛盾",
+      "D、帝国主义和封建主义的矛盾"
+    ],
+    answer: [0, 2]
+  },
+  {
+    question: "5、有中国特点的农业互助合作道路所采取的组织形式有",
+    options: [
+      "A、互助组",
+      "B、初级农业生产合作社",
+      "C、高级农业生产合作社",
+      "D、人民公社"
+    ],
+    answer: [0, 1, 2]
+  },
+  {
+    question: "6、'一五'计划实施期间，我国同时完成了",
+    options: [
+      "A、对知识分子的社会主义改造",
+      "B、对农业的社会主义改造",
+      "C、对手工业的社会主义改造",
+      "D、对资本主义工商业的社会主义改造"
+    ],
+    answer: [1, 2, 3]
+  },
+  {
+    question: "7、1952年党中央在酝酿过渡时期总路线时，毛泽东把实现向社会主义转变的设想，由建国之初的'先搞工业化建设'再一举过渡，改变为'建设和改造同时并举，逐步过渡'，这一改变原因和条件是",
+    options: [
+      "A、我国社会主义经济因素的不断增长和对资本主义经济的限制",
+      "B、为了确定我国工业化建设的社会主义方向",
+      "C、我国工业化建设取得了重大成就",
+      "D、民主革命的遗留任务已经完成"
+    ],
+    answer: [0, 1, 3]
+  },
+  {
+    question: "8、1954年9月，第一届全国人民代表大会第一次会议在北京召开，标志着人民代表大会制度在全国范围内建立起来，人民代表大会制度是中国人民当家作主的根本政治制度，这一制度是",
+    options: [
+      "A、中国共产党把马克思主义与中国实际相结合的伟大创造",
+      "B、中国共产党带领全国人民长期奋斗的重要成果",
+      "C、全国各族人民的共同利益和共同愿望的反映",
+      "D、近代以来中国社会发展的必然选择"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "9、新中国成立初期，也面临着许多严重的困难和一些紧迫的问题。这对于刚刚执掌全国政权的中国共产党来说，是新的严峻的考验。主要是",
+    options: [
+      "A、能不能保卫住人民胜利的成果，巩固新生的人民政权",
+      "B、能不能战胜严重的经济困难，迅速恢复和发展国民经济",
+      "C、能不能巩固民族独立，维护国家主权和安全",
+      "D、能不能经受住执政的考验"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "10、我国在1951年底到1952年，开展的'三反'运动的内容是",
+    options: [
+      "A、反贪污",
+      "B、反浪费",
+      "C、反官僚主义",
+      "D、反冒险主义"
+    ],
+    answer: [0, 1, 2]
+  },
+  {
+    question: "11、新中国成立初期，中国共产党提出的外交方针包括",
+    options: [
+      "A、另起炉灶",
+      "B、打扫干净屋子再请客",
+      "C、一边倒",
+      "D、孤立主义"
+    ],
+    answer: [0, 1, 2]
+  },
+  {
+    question: "12、新中国成立后，没收官僚资本的工作在全国范围展开。没收官僚资本具有的两重性质是",
+    options: [
+      "A、具有民主革命的性质",
+      "B、具有社会主义革命的性质",
+      "C、具有资本主义的性质",
+      "D、具有封建主义的性质"
+    ],
+    answer: [0, 1]
+  },
+  {
+    question: "13、中国共产党在过渡时期的总路线的内容是",
+    options: [
+      "A、逐步实现国家的社会主义工业化",
+      "B、逐步实现国家对农业的社会主义改造",
+      "C、逐步实现国家对手工业的社会主义改造",
+      "D、逐步实现国家对资本主义工商业的社会主义改造"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "14、开展土地革命，就是要消灭封建地主的土地私有制，实行农民的土地私有制。下列关于土地革命的说法正确的是",
+    options: [
+      "A、土地革命是从根本上摧毁中国封建制度根基的社会大变革",
+      "B、1928年12月毛泽东在井冈山主持制定中国共产党历史上第一个土地法",
+      "C、1931年毛泽东和邓子恢等制定了土地革命中的阶级路线和土地分配方法",
+      "D、1947年中国共产党制定《中国土地法大纲》"
+    ],
+    answer: [0, 1, 3]
+  },
+  {
+    question: "15、有人形象地说南京既是中国近代史的起点，也是中国近代史的终点。下列能够反映这种说法的两个历史片断是",
+    options: [
+      "A、1842年8月29日，英国侵略者强迫清政府在南京江面的英舰上签订中国近代史上第一个不平等条约《南京条约》",
+      "B、洪秀全在南京颁布《天朝田亩制度》",
+      "C、孙中山在南京主持中华民国临时政府第一次国务会议",
+      "D、1949年4月23日，人民解放军占领南京，宣告延续了22年之久的国民党反动统治的覆灭"
+    ],
+    answer: [0, 3]
+  },
+  {
+    question: "16、下列成就属于我国'一五'计划期间取得的是",
+    options: [
+      "A、武汉长江大桥建成",
+      "B、'东方红一号'卫星发射成功",
+      "C、长春第一汽车制造厂建成",
+      "D、第一颗原子弹爆炸成功"
+    ],
+    answer: [0, 2]
+  },
+  {
+    question: "17、中国共产党团结带领中国人民进行28年浴血奋战，打败日本帝国主义，推翻国民党反动统治，完成新民主主义革命，建立了中华人民共和国。这一伟大历史贡献实现了中国从几千年封建专制政治向人民民主的伟大飞跃。这一伟大历史贡献的意义还有",
+    options: [
+      "A、彻底结束了旧中国半殖民地半封建社会的历史",
+      "B、彻底结束了旧中国一盘散沙的局面",
+      "C、彻底废除了列强强加给中国的不平等条约和帝国主义在中国的一切特权",
+      "D、彻底改变了中国一穷二白的落后面貌"
+    ],
+    answer: [0, 1, 2]
+  },
+  {
+    question: "18、20世纪50年代中期，社会主义改造基本完成，标志着",
+    options: [
+      "A、社会主义制度在我国已经确立",
+      "B、我国进入了社会主义初级阶段",
+      "C、我国步入了社会主义改革时期",
+      "D、我国完成了从新民主主义向社会主义的过渡"
+    ],
+    answer: [0, 1, 3]
+  },
+  {
+    question: "19、1956年，我们党团结带领中国人民完成了社会主义革命，确立了社会主义基本制度，消灭了一切剥削制度，推进了社会主义建设。这是中国共产党的伟大历史贡献之一，其历史意义在于",
+    options: [
+      "A、完成了中华民族有史以来最为广泛而深刻的社会变革",
+      "B、为当代中国一切发展进步奠定了根本政治前提和制度基础",
+      "C、为中国发展富强、中国人民生活富裕奠定了坚实基础",
+      "D、实现了中华民族由不断衰落到根本扭转命运、持续走向繁荣富强的伟大飞跃"
+    ],
+    answer: [0, 1, 2, 3]
+  },
+  {
+    question: "20、我国的社会主义改造是一场伟大的社会变革，但是在改造过程中也出现了一些偏差，遗留了一些问题，具体表现在",
+    options: [
+      "A、所有制结构过于简单，在社会主义公有制已居于绝对统治地位的条件下，没有有限度地保留一部分有益于国计民生的个体经济和私营经济",
+      "B、高度集中的计划经济体制也随之扩大到整个社会经济生活",
+      "C、在一定程度上排斥了商品经济和市场机制的正常运行",
+      "D、要求过急，发展过快，工作过粗，改造形式过于简单划一"
+    ],
+    answer: [0, 1, 2, 3]
+  }
+];
+
+const judgeQuiz = [
+  {
+    question: "1、1954年以后，中国人民政治协商会议不再代行全国人民代表大会的职权。(   )",
+    answer: true
+  },
+  {
+    question: "2、新中国没收官僚资本，既具有民主革命的性质，又具有社会主义革命的性质。(     )",
+    answer: true
+  },
+  {
+    question: "3、党在过渡时期总路线的主要内容被概括为“一化三改”，其中“一化”是指社会主义现代化	(   )",
+    answer: false
+  },
+  {
+    question: "4、我国对个体农业、手工业和资本主义工商业进行改造的实质是变革生产关系的社会主义革命。(     )",
+    answer: true
+  },
+  {
+    question: "5、新中国成立后，中国进入到社会主义社会。	(     )",
+    answer: false
+  },
+  {
+    question: "6、新中国成立后，中国进入到新民主主义社会。(     )",
+    answer: true
+  },
+  {
+    question: "7、新民主主义社会在经济上的特点，是既有社会主义，又有资本主义。(   )",
+    answer: true
+  },
+  {
+    question: "8、中华人民共和国的成立，标志着半殖民地半封建社会的结束和社会主义社会在全国范围内的建立。	(   )",
+    answer: false
+  },
+  {
+    question: "9、中华人民共和国的成立，标志着新民主主义革命阶段的基本结束和社会主义革命阶段的开始(     )",
+    answer: true
+  },
+  {
+    question: "10、新民主主义社会是属于资本主义性质的社会。(    )",
+    answer: false
+  },
+  {
+    question: "11、新民主主义社会是属于社会主义体系的和逐步过渡到社会主义社会去的过渡性质的社会。(     )",
+    answer: true
+  },
+  {
+    question: "12、中国共产党领导的革命，包括旧民主主义革命和新民主主义革命两个阶段。(   )",
+    answer: true
+  },
+  {
+    question: "13、社会主义改造是围绕着社会主义工业化建设的任务进行的。(     )",
+    answer: true
+  },
+  {
+    question: "14、到1956年，随着社会主义改造的基本完成，社会主义的基本经济制度在中国建立起来了。	(    )",
+    answer: true
+  },
+  {
+    question: "15、1949年中华人民共和国的成立，标志着中国基本实现了民族独立和人民解放。(    )",
+    answer: true
+  },
+  {
+    question: "16、从1953年开始的第一个五年计划，把优先发展轻工业作为建设的中心环节。	(    )",
+    answer: false
+  },
+  {
+    question: "17、新中国成立后，我国对民族资本主义工商业的社会主义改造是通过赎买政策实现的。(     )",
+    answer: true
+  },
+  {
+    question: "18、新民主主义社会基本矛盾：国际上是新中国同帝国主义的矛盾，国内是工人阶级和资产阶级的矛盾。(   )",
+    answer: true
+  },
+  {
+    question: "19、新中国是在完成了社会主义工业化之后才进行社会主义改造的。(     )",
+    answer: false
+  },
+  {
+    question: "20、1953年，新中国提出有系统的进行社会主义改造，同时也开始进行有计划的社会主义建设。	(    )",
+    answer: true
+  },
+  {
+    question: "21、中国的资产阶级有三个部分，即官僚资产阶级、民族资产阶级和小资产阶级。(    )",
+    answer: false
+  },
+  {
+    question: "22、1954年9月，中华人民共和国第一届全国人民代表大会第一次会议在北京召开，大会讨论并通过了《中华人民共和国宪法》，这成为新中国民主政治建设发展历程中具有标志性的事件。(    )",
+    answer: true
+  },
+  {
+    question: "23、1954年9月，中华人民共和国第一届全国人民代表大会第一次会议召开，这是中国进入社会主义社会的最主要的标志。	(    )",
+    answer: false
+  },
+  {
+    question: "24、抗美援朝战争的胜利，打破了美国军队不可战胜的神话。	(     )",
+    answer: true
+  },
+  {
+    question: "25、对资本主义工商业的社会主义改造是通过合作化运动实现的。(     )",
+    answer: false
+  },
+  {
+    question: "26、对农业和手工业的社会主义改造是通过合作化运动实现的	(   )",
+    answer: true
+  }
+];
+
+
+  let currentType = 'single'; // 'single', 'multi', 'judge'
+  let current = 0;
+  let multiSelected = []; // 多选题已选项
+
+  function renderQuestion() {
+    let q;
+    if (currentType === 'single') {
+      q = quiz[current];
+    } else if (currentType === 'multi') {
+      q = multiQuiz[current];
+    } else if (currentType === 'judge') {
+      q = judgeQuiz[current];
+    }
+
+    document.getElementById("question").innerText = q.question;
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    if (currentType === 'judge') {
+      ["正确", "错误"].forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkJudgeAnswer(index === 0, div);
+        optionsDiv.appendChild(div);
+      });
+    } else if (currentType === 'multi') {
+      multiSelected = [];
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => toggleMultiSelect(div, index);
+        optionsDiv.appendChild(div);
+      });
+      // 添加放大且居中的提交按钮
+      const submitBtn = document.createElement("button");
+      submitBtn.innerText = "提交";
+      submitBtn.className = "multi-submit-btn";
+      submitBtn.onclick = checkMultiAnswer;
+      optionsDiv.appendChild(submitBtn);
+    } else {
+      // 单选
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkAnswer(index, div);
+        optionsDiv.appendChild(div);
+      });
+    }
+  }
+
+  function toggleMultiSelect(div, index) {
+    if (multiSelected.includes(index)) {
+      multiSelected = multiSelected.filter(i => i !== index);
+      div.classList.remove("selected");
+    } else {
+      multiSelected.push(index);
+      div.classList.add("selected");
+    }
+  }
+
+  function checkMultiAnswer() {
+    const correct = multiQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      // 提交后，所有正确选项变绿，其他不变色
+      if (correct.includes(i)) {
+        opt.classList.add("correct");
+      }
+      opt.classList.remove("selected");
+    });
+    // 禁用提交按钮
+    const btn = document.querySelector(".multi-submit-btn");
+    if (btn) btn.disabled = true;
+  }
+
+  function checkAnswer(index, el) {
+    let correct = quiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if (i === correct) opt.classList.add("correct");
+      else if (i === index) opt.classList.add("wrong");
+    });
+  }
+
+  function checkJudgeAnswer(isTrue, el) {
+    let correct = judgeQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if ((i === 0 && correct) || (i === 1 && !correct)) {
+        opt.classList.add("correct");
+      } else if ((i === 0 && !correct && isTrue) || (i === 1 && correct && !isTrue)) {
+        opt.classList.add("wrong");
+      }
+    });
+  }
+
+  function showAnswer() {
+    if (currentType === 'single') {
+      const correctIndex = quiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (i === correctIndex) opt.classList.add("correct");
+      });
+    } else if (currentType === 'multi') {
+      const correct = multiQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (correct.includes(i)) opt.classList.add("correct");
+      });
+      const btn = document.querySelector("#options button");
+      if (btn) btn.disabled = true;
+    } else if (currentType === 'judge') {
+      let correct = judgeQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if ((i === 0 && correct) || (i === 1 && !correct)) {
+          opt.classList.add("correct");
+        }
+      });
+    }
+  }
+
+  function nextQuestion() {
+    if (currentType === 'single') {
+      if (current < quiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'multi';
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'multi') {
+      if (current < multiQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'judge';
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'judge') {
+      if (current < judgeQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      }
+    }
+  }
+
+  function prevQuestion() {
+    if (current > 0) {
+      current--;
+      renderQuestion();
+    } else if (currentType === 'multi') {
+      currentType = 'single';
+      current = quiz.length - 1;
+      renderQuestion();
+    } else if (currentType === 'judge') {
+      currentType = 'multi';
+      current = multiQuiz.length - 1;
+      renderQuestion();
+    }
+  }
+
+  renderQuestion();
+</script>
+
+</body>
+</html>
