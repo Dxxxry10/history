@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>近现代史刚要第一章</title>
+  <style>
+    body { font-family: sans-serif; }
+    .modal {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: white; padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      width: 400px; border-radius: 10px;
+    }
+    .option {
+      margin: 8px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s, color 0.2s;
+      text-align: left;
+    }
+    .option.selected {
+      background-color: #444 !important;
+      color: #fff !important;
+      border-color: #444 !important;
+    }
+    .option.correct {
+      background-color: #43a047 !important;
+      color: #fff !important;
+      border-color: #43a047 !important;
+    }
+    .option.wrong {
+      background-color: #ffcaca;
+    }
+    .buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .multi-submit-btn {
+      display: block;
+      margin: 32px auto 0 auto;
+      background: linear-gradient(to right, #4a00e0, #8e2de2);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 15px;
+      font-size: 0.7rem;
+      font-weight: 300;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(142, 45, 226, 0.2);
+    }
+    .multi-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<div class="modal" id="quizModal">
+  <div id="question"></div>
+  <div id="options"></div>
+  <div class="buttons">
+    <button onclick="prevQuestion()">上一题</button>
+    <button onclick="showAnswer()">不会</button>
+    <button onclick="nextQuestion()">下一题</button>
+  </div>
+</div>
+
+<script>
+
+
+    const quiz = [
+  {
+    question: "1. 近代以来的历史表明，要争得民族独立和人民解放，必须首先：",
+    options: [
+      "A. 发展民族工商业",
+      "B. 集中力量进行现代化建设",
+      "C. 学习外国先进的军事和科学技术",
+      "D. 进行反帝反封建的民主革命"
+    ],
+    answer: 3
+  },
+  {
+    question: "2. 1840年，英国发动了侵略中国的鸦片战争，中国历史的发展从此发生重大转折。鸦片战争之所以被称为中国近代史的起点，是因为：",
+    options: [
+      "A. 清王朝内部满汉民族矛盾急剧恶化",
+      "B. 民族意识已经普遍觉醒",
+      "C. 农民起义规模空前",
+      "D. 中国的封建社会逐步变成了半殖民地半封建社会"
+    ],
+    answer: 3
+  },
+  {
+    question: "3. 近代中国最主要的矛盾是：",
+    options: [
+      "A. 工人阶级和农民阶级的矛盾",
+      "B. 地主阶级和农民阶级的矛盾",
+      "C. 封建主义和人民大众的矛盾",
+      "D. 帝国主义和中华民族的矛盾"
+    ],
+    answer: 3
+  },
+  {
+    question: "4. 帝国主义侵略中国的最终目的，是要瓜分中国、灭亡中国。1895年中国在甲午战争中战败后，列强掀起了瓜分中国的狂潮，这集中表现在：",
+    options: [
+      "A. 竞相租借港湾和划分势力范围",
+      "B. 外国资本在中国近代工业中争夺垄断地位",
+      "C. 设立完全由外国人直接控制和统治的租界",
+      "D. 从侵占中国周边邻国发展到蚕食中国边疆地区"
+    ],
+    answer: 0
+  },
+  {
+    question: "5. 鸦片战争后，美国趁火打劫逼迫清政府签订的不平等条约是：",
+    options: [
+      "A. 《望厦条约》",
+      "B. 《黄埔条约》",
+      "C. 《南京条约》",
+      "D. 《北京条约》"
+    ],
+    answer: 0
+  },
+  {
+    question: "6. 鸦片战争后，法国趁火打劫逼迫清政府签订的不平等条约是：",
+    options: [
+      "A. 《望厦条约》",
+      "B. 《黄埔条约》",
+      "C. 《南京条约》",
+      "D. 《北京条约》"
+    ],
+    answer: 1
+  },
+  {
+    question: "7. 中国近代史上第一次大规模的群众性的反侵略斗争是：",
+    options: [
+      "A. 太平天国运动",
+      "B. 虎门销烟",
+      "C. 义和团运动",
+      "D. 三元里人民抗英斗争"
+    ],
+    answer: 3
+  },
+  {
+    question: "8. 第二次鸦片战争中，掠夺中国领土最多的国家是：",
+    options: [
+      "A. 法国",
+      "B. 英国",
+      "C. 俄国",
+      "D. 美国"
+    ],
+    answer: 2
+  },
+  {
+    question: "9. 1839年组织编写《四洲志》，向中国人介绍西方情况的历史人物是：",
+    options: [
+      "A. 林则徐",
+      "B. 魏源",
+      "C. 马建忠",
+      "D. 郑观应"
+    ],
+    answer: 0
+  },
+  {
+    question: "10. 1894年11月喊出了\"振兴中华\"这个时代最强音的是：",
+    options: [
+      "A. 林则徐",
+      "B. 魏源",
+      "C. 康有为",
+      "D. 孙中山"
+    ],
+    answer: 3
+  },
+  {
+    question: "11. 魏源的\"师夷长技以制夷\"思想，主张学习外国先进的军事和科技，他在哪部著作中提出这个思想：",
+    options: [
+      "A. 《夷情备采》",
+      "B. 《四洲志》",
+      "C. 《海国图志》",
+      "D. 《盛世危言》"
+    ],
+    answer: 2
+  },
+  {
+    question: "12. 帝国主义侵略中国的最终目的是：",
+    options: [
+      "A. 帮助中国发展资本主义",
+      "B. 传播西方先进文化",
+      "C. 为本国资本主义发展寻求市场和原料产地",
+      "D. 瓜分中国，灭亡中国"
+    ],
+    answer: 3
+  },
+  {
+    question: "13. 标志中国半殖民地半封建社会彻底形成的不平等条约是：",
+    options: [
+      "A. 《天津条约》",
+      "B. 《北京条约》",
+      "C. 《马关条约》",
+      "D. 《辛丑条约》"
+    ],
+    answer: 3
+  },
+  {
+    question: "14. 中国近代以来，促使中国人民的民族意识开始普遍觉醒的重大事件：",
+    options: [
+      "A. 日本全面侵华战争",
+      "B. 中日甲午战争",
+      "C. 八国联军战争",
+      "D. 中法战争"
+    ],
+    answer: 1
+  },
+  {
+    question: "15. 魏源在《海国图志》中提出的重要思想是：",
+    options: [
+      "A. 师夷长技以制夷",
+      "B. 中学为体、西学为用",
+      "C. 救亡图存和振兴中华",
+      "D. 物竞天择、适者生存"
+    ],
+    answer: 0
+  },
+  {
+    question: "16. 被称为近代中国睁眼看世界第一人的是：",
+    options: [
+      "A. 林则徐",
+      "B. 魏源",
+      "C. 龚自珍",
+      "D. 郑观应"
+    ],
+    answer: 0
+  },
+  {
+    question: "17. 标志着近代中国开始沦为半殖民地半封建社会的条约是：",
+    options: [
+      "A. 《南京条约》",
+      "B. 《北京条约》",
+      "C. 《天津条约》",
+      "D. 《望厦条约》"
+    ],
+    answer: 0
+  },
+  {
+    question: "18. 帝国主义列强不能灭亡和瓜分中国，最根本的原因是：",
+    options: [
+      "A. 帝国主义列强之间的矛盾和互相制约",
+      "B. 帝国主义国家的内部矛盾",
+      "C. 中华民族进行的不屈不挠的反侵略斗争",
+      "D. 中国疆域辽阔、人口众多"
+    ],
+    answer: 2
+  },
+  {
+    question: "19. 鸦片战争后，中国经济逐渐被卷入世界资本主义市场，其对中国的影响不包括：",
+    options: [
+      "A. 自给自足的自然经济逐步解体",
+      "B. 西方的先进生产技术逐步传入中国",
+      "C. 英国对华输出商品激增",
+      "D. 封建地主土地所有制瓦解"
+    ],
+    answer: 3
+  },
+  {
+    question: "20. 将中国领土台湾割让给日本的不平等条约是：",
+    options: [
+      "A. 《南京条约》",
+      "B. 《北京条约》",
+      "C. 《马关条约》",
+      "D. 《瑷珲条约》"
+    ],
+    answer: 2
+  },
+  {
+    question: "21. 在近代中国，实现国家富强和人民富裕的前提条件是：",
+    options: [
+      "A. 反对帝国主义的侵略",
+      "B. 争取民族独立和人民解放",
+      "C. 推翻封建主义的统治",
+      "D. 建立资本主义制度"
+    ],
+    answer: 1
+  },
+  {
+    question: "22. 魏源所说的\"夷长技\"主要是指西方的：",
+    options: [
+      "A. 宗教的思想文化",
+      "B. 教育和人才培养",
+      "C. 军事和科学技术",
+      "D. 民主和政治制度"
+    ],
+    answer: 2
+  },
+  {
+    question: "23. 认识中国近代一切社会问题和革命问题的最基本的依据是认识：",
+    options: [
+      "A. 中国近代社会半殖民地半封建的性质",
+      "B. 中国近代社会近代化的历史过程",
+      "C. 中国近代民族民主革命的性质",
+      "D. 中国近代社会经济结构的变化过程"
+    ],
+    answer: 0
+  },
+  {
+    question: "24. 帝国主义列强掀起瓜分中国的狂潮是在：",
+    options: [
+      "A. 中日甲午战争爆发后",
+      "B. 第一次鸦片战争爆发后",
+      "C. 八国联军战争爆发后",
+      "D. 第二次鸦片战争爆发后"
+    ],
+    answer: 0
+  },
+  {
+    question: "25. 列强的领事裁判权来自于《南京条约》附件中的哪项条款：",
+    options: [
+      "A. 片面最惠国待遇",
+      "B. 在通商口岸的行动权利",
+      "C. 外交豁免权",
+      "D. 领事裁判权"
+    ],
+    answer: 3
+  },
+  {
+    question: "26. 强迫清政府把九龙半岛南端和昂船洲割让给英国的不平等条约是：",
+    options: [
+      "A. 《北京条约》",
+      "B. 《南京条约》",
+      "C. 《黄埔条约》",
+      "D. 《望厦条约》"
+    ],
+    answer: 0
+  },
+  {
+    question: "27. 在甲午战争中英勇殉国的爱国将领是：",
+    options: [
+      "A. 关天培",
+      "B. 邓世昌",
+      "C. 陈化成",
+      "D. 海龄"
+    ],
+    answer: 1
+  },
+  {
+    question: "28. 中国民族资产阶级对外国资本主义和本国封建主义：",
+    options: [
+      "A. 是完全对立，坚决反对的",
+      "B. 是完全依赖，坚决追随的",
+      "C. 既有矛盾，斗争的一面，又有依赖，妥协的一面",
+      "D. 只反对本国封建主义，不反对外国资本主义"
+    ],
+    answer: 2
+  },
+  {
+    question: "29. 历次反侵略战争失败的根本原因是：",
+    options: [
+      "A. 军事战略错误",
+      "B. 社会制度的腐败",
+      "C. 经济技术的落后",
+      "D. 思想观念的保守"
+    ],
+    answer: 1
+  },
+  {
+    question: "30. 中国被迫把领土台湾割让给日本的不平等条约是：",
+    options: [
+      "A. 《南京条约》",
+      "B. 《北京条约》",
+      "C. 《马关条约》",
+      "D. 《瑷珲条约》"
+    ],
+    answer: 2
+  },
+  {
+    question: "31. 严复翻译的《天演论》所宣传的重要思想是：",
+    options: [
+      "A. \"师夷长技以制夷\"",
+      "B. \"中学为体，西学为用\"",
+      "C. \"天下兴亡，匹夫有责\"",
+      "D. \"物竞天择，适者生存\""
+    ],
+    answer: 3
+  },
+  {
+    question: "32. 孙中山先生在青年时代目睹山河破碎、生灵涂炭，就提出：",
+    options: [
+      "A. \"吾国四千余年大梦之唤醒，实自甲午战败割台湾、偿二百兆以后始也\"",
+      "B. \"亟拯斯民于水火，切扶大厦之将倾\"",
+      "C. \"四万万人齐下泪，天涯何处是神州\"",
+      "D. \"进者存而传焉，不进者病而亡焉\""
+    ],
+    answer: 1
+  }
+];
+const multiQuiz = [
+  {
+    question: "1. 近代中国半殖民地半封建社会的主要矛盾是：",
+    options: [
+      "A. 无产阶级同资产阶级的矛盾",
+      "B. 帝国主义同中华民族的矛盾",
+      "C. 帝国主义同中国封建势力的矛盾",
+      "D. 封建主义同人民大众的矛盾"
+    ],
+    answer: [1, 3] // BD
+  },
+  {
+    question: "2. 资本—帝国主义对中国的侵略，首先和主要的是进行军事侵略，下列行径属于军事侵略的是：",
+    options: [
+      "A. 发动侵略战争 屠杀中国人民",
+      "B. 勒索赔款 抢掠财富",
+      "C. 侵占中国领土 划分势力范围",
+      "D. 扶植、收买代理人"
+    ],
+    answer: [0, 1, 2] // ABC
+  },
+  {
+    question: "3. 近代以来资本-帝国主义侵略中国的方式主要有：",
+    options: [
+      "A. 军事侵略",
+      "B. 政治控制",
+      "C. 经济掠夺",
+      "D. 文化渗透"
+    ],
+    answer: [0, 1, 2, 3] // ABCD
+  },
+  {
+    question: "4. 近代中国人民的反侵略战争：",
+    options: [
+      "A. 沉重地打击了资本—帝国主义列强的侵华野心",
+      "B. 使我们的国家和民族历尽劫难、屡遭侵略而不亡",
+      "C. 它表现出来的爱国主义精神，铸成了中华民族的民族魂",
+      "D. 反侵略战争的失败，挫伤了中国人民的反帝反封建意志，让中国人一蹶不振"
+    ],
+    answer: [0, 1, 2] // ABC
+  },
+  {
+    question: "5. 近代中国反侵略斗争失败的原因：",
+    options: [
+      "A. 社会制度的腐败",
+      "B. 经济技术落后",
+      "C. 外国侵略势力强大",
+      "D. 资本主义比较发达"
+    ],
+    answer: [0, 1] // AB
+  },
+  {
+    question: "6. 近代中华民族面临的两大历史任务：",
+    options: [
+      "A. 民族独立和人民解放",
+      "B. 国家富强和人民富裕",
+      "C. 实现社会主义和共产主义",
+      "D. 打倒军阀，推翻国际帝国主义的压迫"
+    ],
+    answer: [0, 1] // AB
+  },
+  {
+    question: "7. 列强控制中国经济的方式有：",
+    options: [
+      "A. 控制中国的交通运输业",
+      "B. 在中国设立银行",
+      "C. 控制中国的关税和盐税",
+      "D. 在中国设立出版机构宣传西学"
+    ],
+    answer: [0, 1, 2] // ABC
+  },
+  {
+    question: "8. 鸦片战争爆发前，英国等西方国家向中国走私大量的鸦片，其结果是：",
+    options: [
+      "A. 毒害了中国人的身体和精神",
+      "B. 造成中国财政危机",
+      "C. 加重了中国劳动人民的负担",
+      "D. 导致官员受贿腐败"
+    ],
+    answer: [0, 1, 2, 3] // ABCD
+  },
+  {
+    question: "9. 鸦片战争成为中国近代史的起点，这是因为随着西方列强的入侵：",
+    options: [
+      "A. 中国逐步成为半殖民地半封建国家",
+      "B. 中国社会主要矛盾发生变化",
+      "C. 中国逐渐开始了反帝反封建的资产阶级民主革命",
+      "D. 中国革命属于世界无产阶级革命的组成部分"
+    ],
+    answer: [0, 1, 2] // ABC
+  },
+  {
+    question: "10. 鸦片战争后，清政府被迫与列强签订的第一批不平等条约主要有：",
+    options: [
+      "A. 《北京条约》",
+      "B. 《黄埔条约》",
+      "C. 《望厦条约》",
+      "D. 《南京条约》"
+    ],
+    answer: [1, 2, 3] // BCD
+  },
+  {
+    question: "11. 资本—帝国主义的入侵对中国的影响：",
+    options: [
+      "A. 打破了清朝闭关锁国的状态",
+      "B. 促进了封建经济的解体",
+      "C. 促使中国发生了资本主义因素",
+      "D. 严重阻碍了中国的经济发展和社会进步，是近代中国贫穷落后的根源"
+    ],
+    answer: [0, 1, 2, 3] // ABCD
+  },
+  {
+    question: "12. 鸦片战争后，中国社会的阶级关系发生了深刻的变动，其主要表现是：",
+    options: [
+      "A. 地主阶级本身发生了某些变化",
+      "B. 部分农民阶级向贫农或雇农转化",
+      "C. 工人阶级的诞生",
+      "D. 中国资产阶级的产生"
+    ],
+    answer: [0,1, 2, 3] // ABCD
+  },
+  {
+    question: "13. 近代以来帝国主义列强瓜分中国图谋破产的原因是：",
+    options: [
+      "A. 帝国主义列强之间的矛盾",
+      "B. 帝国主义列强之间的相互制约",
+      "C. 中华民族不屈不挠的反侵略斗争",
+      "D. 清政府的顽强反抗"
+    ],
+    answer: [0, 1, 2] // ABC
+  },
+  {
+    question: "14. 资本-帝国主义入侵中国，使中国在经济上：",
+    options: [
+      "A. 丧失了独立性",
+      "B. 加速了中国自然经济的瓦解"
+    ],
+    answer: [0, 1] // AB
+  }
+];
+    // 你可以继续添加更多题目
+const judgeQuiz = [
+  {
+    question: "1. 西方殖民主义势力来到东方，是为了使东方国家成为独立的资本主义国家。",
+    answer: false
+  },
+  {
+    question: "2. 近代中国诞生的新的被压迫阶级是农民阶级。",
+    answer: false
+  },
+  {
+    question: "3. 近代中国社会的主要矛盾是农民阶级与地主阶级的矛盾，工人阶级与资产阶级的矛盾。",
+    answer: false
+  },
+  {
+    question: "4. 近代中国社会最主要的矛盾是封建主义与人民大众的矛盾。",
+    answer: false
+  },
+  {
+    question: "5. 只有通过革命获得民族独立和人民解放以后，中国人民才可能集中力量进行现代化建设实现国家富强和人民富裕。",
+    answer: true
+  },
+  {
+    question: "6. 近代中国是一个半殖民地半封建社会，近代中国的所有地区，在所有时期都是半殖民地。",
+    answer: false
+  },
+  {
+    question: "7. 资本-帝国主义对中国的侵略，首先和主要的是军事侵略。",
+    answer: true
+  },
+  {
+    question: "8. 1842年，英国强迫清政府签订《南京条约》，把九龙半岛割让给英国。",
+    answer: false
+  },
+  {
+    question: "9. 近代中国反侵略战争失败主要由于中国社会制度的腐败和经济技术的落后。",
+    answer: true
+  },
+  {
+    question: "10. 帝国主义列强对中国的争夺和瓜分的图谋，在中法战争爆发后达到高潮。",
+    answer: false
+  },
+  {
+    question: "11. 鸦片战争开放广州、厦门、福州、宁波、上海等五个港口城市为通商口岸，打破了清政府的闭关政策。",
+    answer: true
+  },
+  {
+    question: "12. 中国的工人阶级与中国的资产阶级同时产生。",
+    answer: false
+  },
+  {
+    question: "13. 中国的民族资本主义经济始终不在中国社会经济中占主导地位。",
+    answer: true
+  },
+  {
+    question: "14. 外国资本—帝国主义侵略中国的目的是想使中国变成一个资本主义的国家。",
+    answer: false
+  },
+  {
+    question: "15. 外国资本—帝国主义对中国的侵略客观上促进了中国资本主义的发展。",
+    answer: true
+  },
+  {
+    question: "16. 近代以来中华民族面临的两大历史任务是：争取民族独立、人民解放和实现国家富强、人民富裕。",
+    answer: true
+  },
+  {
+    question: "17. 帝国主义列强对中国进行文化渗透的目的是宣扬殖民主义奴化思想，麻醉中国人民的精神，摧毁中国人民的民族自尊心和自信心。",
+    answer: true
+  },
+  {
+    question: "18、中国近代史上英国在中国上海设立了第一块租界。 ",
+    answer: true
+  }
+];
+
+  let currentType = 'single'; // 'single', 'multi', 'judge'
+  let current = 0;
+  let multiSelected = []; // 多选题已选项
+
+  function renderQuestion() {
+    let q;
+    if (currentType === 'single') {
+      q = quiz[current];
+    } else if (currentType === 'multi') {
+      q = multiQuiz[current];
+    } else if (currentType === 'judge') {
+      q = judgeQuiz[current];
+    }
+
+    document.getElementById("question").innerText = q.question;
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    if (currentType === 'judge') {
+      ["正确", "错误"].forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkJudgeAnswer(index === 0, div);
+        optionsDiv.appendChild(div);
+      });
+    } else if (currentType === 'multi') {
+      multiSelected = [];
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => toggleMultiSelect(div, index);
+        optionsDiv.appendChild(div);
+      });
+      // 添加放大且居中的提交按钮
+      const submitBtn = document.createElement("button");
+      submitBtn.innerText = "提交";
+      submitBtn.className = "multi-submit-btn";
+      submitBtn.onclick = checkMultiAnswer;
+      optionsDiv.appendChild(submitBtn);
+    } else {
+      // 单选
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkAnswer(index, div);
+        optionsDiv.appendChild(div);
+      });
+    }
+  }
+
+  function toggleMultiSelect(div, index) {
+    if (multiSelected.includes(index)) {
+      multiSelected = multiSelected.filter(i => i !== index);
+      div.classList.remove("selected");
+    } else {
+      multiSelected.push(index);
+      div.classList.add("selected");
+    }
+  }
+
+  function checkMultiAnswer() {
+    const correct = multiQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      // 提交后，所有正确选项变绿，其他不变色
+      if (correct.includes(i)) {
+        opt.classList.add("correct");
+      }
+      opt.classList.remove("selected");
+    });
+    // 禁用提交按钮
+    const btn = document.querySelector(".multi-submit-btn");
+    if (btn) btn.disabled = true;
+  }
+
+  function checkAnswer(index, el) {
+    let correct = quiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if (i === correct) opt.classList.add("correct");
+      else if (i === index) opt.classList.add("wrong");
+    });
+  }
+
+  function checkJudgeAnswer(isTrue, el) {
+    let correct = judgeQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if ((i === 0 && correct) || (i === 1 && !correct)) {
+        opt.classList.add("correct");
+      } else if ((i === 0 && !correct && isTrue) || (i === 1 && correct && !isTrue)) {
+        opt.classList.add("wrong");
+      }
+    });
+  }
+
+  function showAnswer() {
+    if (currentType === 'single') {
+      const correctIndex = quiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (i === correctIndex) opt.classList.add("correct");
+      });
+    } else if (currentType === 'multi') {
+      const correct = multiQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (correct.includes(i)) opt.classList.add("correct");
+      });
+      const btn = document.querySelector("#options button");
+      if (btn) btn.disabled = true;
+    } else if (currentType === 'judge') {
+      let correct = judgeQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if ((i === 0 && correct) || (i === 1 && !correct)) {
+          opt.classList.add("correct");
+        }
+      });
+    }
+  }
+
+  function nextQuestion() {
+    if (currentType === 'single') {
+      if (current < quiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'multi';
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'multi') {
+      if (current < multiQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'judge';
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'judge') {
+      if (current < judgeQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      }
+    }
+  }
+
+  function prevQuestion() {
+    if (current > 0) {
+      current--;
+      renderQuestion();
+    } else if (currentType === 'multi') {
+      currentType = 'single';
+      current = quiz.length - 1;
+      renderQuestion();
+    } else if (currentType === 'judge') {
+      currentType = 'multi';
+      current = multiQuiz.length - 1;
+      renderQuestion();
+    }
+  }
+
+  renderQuestion();
+</script>
+
+</body>
+</html>
