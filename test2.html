@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>近现代史刚要第一章</title>
+  <!-- 新增viewport适配 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <style>
+    body { font-family: sans-serif; margin: 0; background: #f8f8f8; }
+    .modal {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: white; padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      width: 400px; border-radius: 10px;
+      max-width: 95vw;
+      box-sizing: border-box;
+    }
+    .option {
+      margin: 8px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.2s, color 0.2s;
+      text-align: left;
+      word-break: break-all;
+    }
+    .option.selected {
+      background-color: #444 !important;
+      color: #fff !important;
+      border-color: #444 !important;
+    }
+    .option.correct {
+      background-color: #43a047 !important;
+      color: #fff !important;
+      border-color: #43a047 !important;
+    }
+    .option.wrong {
+      background-color: #ffcaca;
+    }
+    .buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .buttons button {
+      flex: 1 1 30%;
+      min-width: 80px;
+      font-size: 1rem;
+      padding: 10px 0;
+      margin: 0 2px;
+      border-radius: 8px;
+      border: none;
+      background: #4a00e0;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .buttons button:hover {
+      background: #8e2de2;
+    }
+    .multi-submit-btn {
+      display: block;
+      margin: 32px auto 0 auto;
+      background: linear-gradient(to right, #4a00e0, #8e2de2);
+      color: white;
+      border: none;
+      padding: 18px 60px;
+      border-radius: 50px;
+      font-size: 1.3rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(142, 45, 226, 0.2);
+      max-width: 100%;
+      width: 90%;
+    }
+    .multi-submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    /* 响应式适配手机 */
+    @media (max-width: 600px) {
+      .modal {
+        width: 98vw;
+        min-width: unset;
+        padding: 10px;
+        border-radius: 0;
+        top: 0;
+        left: 0;
+        transform: none;
+        height: 100vh;
+        max-width: 100vw;
+        box-shadow: none;
+        overflow-y: auto;
+      }
+      .option {
+        font-size: 1rem;
+        padding: 12px 8px;
+      }
+      .multi-submit-btn {
+        font-size: 1.1rem;
+        padding: 14px 0;
+        width: 100%;
+        margin: 24px 0 0 0;
+      }
+      /* 保持按钮横向排列，不要竖排 */
+      .buttons {
+        flex-direction: row !important;
+        gap: 8px;
+      }
+      .buttons button {
+        font-size: 1rem;
+        padding: 12px 0;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="modal" id="quizModal">
+  <div id="question"></div>
+  <div id="options"></div>
+  <div class="buttons">
+    <button onclick="prevQuestion()">上一题</button>
+    <button onclick="showAnswer()">不会</button>
+    <button onclick="nextQuestion()">下一题</button>
+  </div>
+</div>
+
+<script>
+const quiz = [
+  {
+    question: "1. 近代中国的社会性质是( )。",
+    options: [
+      "A. 殖民地社会",
+      "B. 封建社会",
+      "C. 半殖民地半封建社会",
+      "D. 不完全的殖民地社会"
+    ],
+    answer: 2
+  },
+  {
+    question: "2. 帝国主义列强对中国的侵略，首先和主要的是进行 ()。",
+    options: [
+      "A. 军事侵略",
+      "B. 政治控制",
+      "C. 经济掠夺",
+      "D. 文化渗透"
+    ],
+    answer: 0
+  },
+  {
+    question: "3. 帝国主义侵略中国的最终目的,是要( )。",
+    options: [
+      "A. 帮助中国发展资本主义",
+      "B. 传播西方先进文化",
+      "C. 为本国资本主义发展寻求市场和原料产地",
+      "D. 瓜分中国"
+    ],
+    answer: 3
+  },
+  {
+    question: "4. 近代中国睁眼看世界的第一人是( )。",
+    options: [
+      "A. 李鸿章",
+      "B. 林则徐",
+      "C. 郑观应",
+      "D. 严复"
+    ],
+    answer: 1
+  },
+  {
+    question: "5. 最能体现太平天国社会理想和这次农民起义特色的纲领性文件是( )。",
+    options: [
+      "A. 《资政新篇》",
+      "B. 《天朝田亩制度》",
+      "C. 《万大洪告示》",
+      "D. 《原道醒世训》"
+    ],
+    answer: 1
+  },
+  {
+    question: "6. 下列关于南京临时政府的性质叙述正确是( )。",
+    options: [
+      "A. 以资产阶级立宪派为主体的政府",
+      "B. 资产阶级革命派为主体的政府",
+      "C. 城市小资产阶级和民族资产阶级的联合政府",
+      "D. 以工农革命群众为主体的政府"
+    ],
+    answer: 1
+  },
+  {
+    question: "7. 具有资产阶级共和国宪法性质的是( )。",
+    options: [
+      "A. 《定国是诏》",
+      "B. 《天朝田亩制度》",
+      "C. 《钦定宪法大纲》",
+      "D. 《中华民国临时约法》"
+    ],
+    answer: 3
+  },
+  {
+    question: "8. 新文化运动兴起的标志是( )。",
+    options: [
+      "A. 蔡元培就任北京大学校长",
+      "B. 民主与科学口号的提出",
+      "C. 陈独秀在上海创办《青年杂志》",
+      "D. 李大钊发表《庶民的胜利》"
+    ],
+    answer: 2
+  },
+  {
+    question: "9. 中国近代教育始于 () 时期。",
+    options: [
+      "A. 太平天国农民起义",
+      "B. 洋务运动",
+      "C. 戊戌变法",
+      "D. 辛亥革命"
+    ],
+    answer: 1
+  },
+  {
+    question: "10. 洋务运动时期,主要培养翻译人才的学校是( )。",
+    options: [
+      "A. 京师大学堂",
+      "B. 工艺学堂",
+      "C. 船政学堂",
+      "D. 京师同文馆"
+    ],
+    answer: 3
+  },
+  {
+        question: "11. 洋务运动创办的新式学堂不包括（）。",
+        options: [
+            "A. 翻译学堂",
+            "B. 工艺学堂",
+            "C. 军事学堂",
+            "D. 医学学堂"
+        ],
+        answer: 3
+    },
+    {
+        question: "12. 孙中山领导的辛亥革命实现了20世纪中国第一次历史性巨变，因为这次革命 ( )",
+        options: [
+            "A. 推翻了统治中国两千多年的君主专制制度",
+            "B. 确立了资产阶级民主共和制度",
+            "C. 给予了人民充分的民主与自由权利",
+            "D. 结束了帝国主义在中国的统治"
+        ],
+        answer: 0
+    },
+    {
+        question: "13. 1935年8月1日，中共驻共产国际代表团发表( ) 又称《八一宣言》，呼吁一致抗日。",
+        options: [
+            "A. 《停止内战一致抗日》",
+            "B. 《中国苏维埃政府、中国共产党中共中央为抗日救国告全国同胞书》",
+            "C. 《停战议和一致抗日》",
+            "D. 《反日反蒋的初步协定》"
+        ],
+        answer: 1
+    },
+    {
+        question: "14. 皖南事变发生后，周恩来发表“千古奇冤，江南一叶，同室操戈，相煎何急?”的题词。这表明中共 ( )。",
+        options: [
+            "A. 认为国共合作实际上已经破裂",
+            "B. 决定武装反抗国民党的屠杀政策",
+            "C. 要独立自主的担负起反抗日本侵略的责任",
+            "D. 以抗日大局为重，军事上严防死守，政治上坚决反击"
+        ],
+        answer: 3
+    },
+    {
+        question: "15. 毛泽东在《反对本本主义》中提出的著名科学论断是( )。",
+        options: [
+            "A. 枪杆子里面出政权",
+            "B. 没有文化的军队是一支愚蠢的军队",
+            "C. 没有调查就没有发言权",
+            "D. 帝国主义和一切反动派都是纸老虎"
+        ],
+        answer: 2
+    },
+    {
+        question: "16. 揭开人民解放军全国性战略进攻序幕的是( )",
+        options: [
+            "A. 孟良崮战役开始",
+            "B. 刘邓大军千里跃进大别山",
+            "C. 三大战役开始",
+            "D. 渡江战役开始"
+        ],
+        answer: 1
+    },
+    {
+        question: "17. 七届二中全会召开的地点是（ ）",
+        options: [
+            "A. 北平",
+            "B. 延安",
+            "C. 西柏坡",
+            "D. 上海"
+        ],
+        answer: 2
+    },
+    {
+        question: "18. 毛泽东在《论持久战》中指出，中国抗日战争取得胜利最关键的阶段是( )",
+        options: [
+            "A. 战略防御阶段",
+            "B. 战略相持阶段",
+            "C. 战略反攻阶段",
+            "D. 战略决战阶段"
+        ],
+        answer: 1
+    },
+    {
+        question: "19. 中共八大提出的我国经济建设方针是( )",
+        options: [
+            "A. 大干快上，超英赶美",
+            "B. 慢一点、稳一点",
+            "C. 力争高速度压倒一切",
+            "D. 既反保守又反冒进，在综合平衡中稳步前进"
+        ],
+        answer: 3
+    },
+    {
+        question: "20. 毛泽东第一次系统阐述社会主义社会矛盾问题的著作是( )",
+        options: [
+            "A. 《矛盾论》",
+            "B. 《论十大关系》",
+            "C. 《关于正确处理人民内部矛盾的问题》",
+            "D. 《论人民民主专政》"
+        ],
+        answer: 2
+    },
+  {
+    question: "21. 解放战争时期,国民党之所以迅速失去民心，主要是由于( )",
+    options: [
+      "A. 中国共产党组织了反蒋统治的第二条战线",
+      "B. 上海学生举行了声势浩大的'三反'斗争",
+      "C. 违背全国人民迫切要求休养生息、和平建国的意愿，执行反人民的内战政策",
+      "D. 民主党派的联合斗争和人民起义遍及各地"
+    ],
+    answer: 2  // 正确答案C
+  },
+  {
+    question: "22. 党在过渡时期的总路线的主体是( )",
+    options: [
+      "A. 对农业的社会主义改造",
+      "B. 对手工业的社会主义改造",
+      "C. 对资本主义工商业的社会主义改造",
+      "D. 实现国家的社会主义工业化"
+    ],
+    answer: 3  // 正确答案D
+  },
+  {
+    question: "23. 1956年毛泽东作的《论十大关系》的报告，围绕的基本方针是( )",
+    options: [
+      "A. 中国共产党同民主党派长期共存、互相监督",
+      "B. 正确处理人民内部矛盾",
+      "C. 调动一切积极因素，把我国建设成为一个强大的社会主义国家",
+      "D. 调整巩固、充实、提高"
+    ],
+    answer: 2  // 正确答案C
+  },
+  {
+    question: "24. 邓小平提出'走自己的路，建设有中国特色的社会主义'是在( )",
+    options: [
+      "A. 中共十一大上",
+      "B. 中共十一届三中全会上",
+      "C. 中共十一届六中全会上",
+      "D. 中共十二大上"
+    ],
+    answer: 3  // 正确答案D
+  },
+  {
+    question: "25. 中国特色社会主义制度最本质的特征是( )",
+    options: [
+      "A. 中国共产党的领导",
+      "B. 全过程人民民主",
+      "C. 解放和发展生产力",
+      "D. 坚持四项基本原则"
+    ],
+    answer: 0  // 正确答案A
+  },
+  {
+    question: "26. 2001年12月11日，中国正式加入( )",
+    options: [
+      "A. 联合国",
+      "B. 世界贸易组织",
+      "C. 世界卫生组织",
+      "D. 国际货币基金组织"
+    ],
+    answer: 1  // 正确答案B
+  },
+  
+  {
+    question: "28. 中国近代史上第一个不平等条约是( )",
+    options: [
+      "A. 《南京条约》",
+      "B. 《北京条约》",
+      "C. 《天津条约》",
+      "D. 《马关条约》"
+    ],
+    answer: 0  // 正确答案A
+  },
+  {
+    question: "29. 中国特色社会主义制度的最大优势是( )",
+    options: [
+      "A. 坚持以人民为中心",
+      "B. 解放和发展生产力",
+      "C. 中国共产党领导",
+      "D. 坚持四项基本原则"
+    ],
+    answer: 2  // 正确答案C
+  },
+  {
+    question: "30. 近代中国反侵略战争失败的根本原因是( )",
+    options: [
+      "A. 军事战略错误",
+      "B. 武器装备落后",
+      "C. 社会制度的腐败",
+      "D. 经济技术的落后"
+    ],
+    answer: 2  // 正确答案C
+  },
+    {
+        question: "31国民党在全国范围内建立了自己的统治的标志是()",
+        options: [
+            "A. 南京国民政府改组",
+            "B. 宁、汉合流",
+            "C. 张学良“东北易帜”",
+            "D. 《训政纲领》的通过"
+        ],
+        answer: 2
+    },
+    {
+        question: "“共产党现时最主要的任务是有系统地有计划地尽可能在广大区域中准备农民总暴动……工人阶级应时刻领导并参加武装暴动。”上述中国共产党“八七”会议决议表明()",
+        options: [
+            "A. 中国共产党的工作重心由城市转入农村",
+            "B. 中国共产党正式确立了工人阶级的领导地位",
+            "C. 中国共产党确定了武装反抗国民党的方针",
+            "D. 中国共产党的思想理论基础发生了根本变化"
+        ],
+        answer: 2
+    },
+    {
+        question: "片面抗战路线和全面抗战路线最根本的区别在于()。",
+        options: [
+            "A. 是否抵抗日本侵略",
+            "B. 政府是否参与抗战",
+            "C. 军队是否参与抗战",
+            "D. 是否依靠人民群众"
+        ],
+        answer: 3
+    },
+    {
+        question: "“以后要非常注意军事。须知政权是由枪杆子中取得的。”毛泽东的这段发言是在（）提出的。",
+        options: [
+            "A. 中共三大",
+            "B. 八七会议",
+            "C. 古田会议",
+            "D. 三湾改编"
+        ],
+        answer: 1
+    },
+    {
+        question: "中国共产党开创的第一块农村革命根据地是()",
+        options: [
+            "A. 晋察冀根据地",
+            "B. 井冈山根据地",
+            "C. 湘鄂西根据地",
+            "D. 鄂豫皖根据地"
+        ],
+        answer: 1
+    },
+    {
+        question: "中国共产党成立之后,中国革命就展现了新局面,这里的“新”不包括()。",
+        options: [
+            "A. 开始采取群众路线的革命方法",
+            "B. 以武装斗争为主要形式",
+            "C. 提出彻底反帝反封的纲领",
+            "D. 以社会主义、共产主义为奋斗目标"
+        ],
+        answer: 1
+    },
+    {
+        question: "抗日战争时期,加强政权建设，是抗日根据地建设的首要的、根本的任务，主要体现为()",
+        options: [
+            "A. 建立中华苏维埃共和国",
+            "B. 实行“三三制”原则",
+            "C. 开展整风运动",
+            "D. 推行精兵简政政策"
+        ],
+        answer: 1
+    },
+    {
+        question: "1956年9月党的八大提出的我国国内的主要矛盾是()",
+        options: [
+            "A. 无产阶级同资产阶级的矛盾",
+            "B. 人民大众同反革命残余势力的矛盾",
+            "C. 开展社会主义道路与资本主义道路的决战",
+            "D. 人民对于经济文化迅速发展的需要同当前经济文化不能满足人民需要的状况之间的矛盾"
+        ],
+        answer: 3
+    },
+    {
+        question: "1942年,美国总统罗斯福对他的儿子说“如果没有中国,假如中国被打垮了,你想一想会有多少日本兵可以因此调到其他地方,他们可以占领澳洲、打下印度……”。罗斯福的话主要说明()",
+        options: [
+            "A. 美国应该支持中国抗战",
+            "B. 美国对中国的抗战抱有同情心",
+            "C. 美国对中国抗战持观望态度",
+            "D. 中国抗战有力支援了其它国家的反法西斯战争"
+        ],
+        answer: 3
+    },
+    {
+        question: "40.毛泽东提出“一切反动派都是纸老虎”的著名论断,针对的是()",
+        options: [
+            "A. 国民党的历次反革命军事围剿",
+            "B. 国民党顽固派制造皖南事变等反共浪潮",
+            "C. 日本帝国主义被迫宣布无条件投降",
+            "D. 内战初期国民党在军事和经济方面占有明显优势"
+        ],
+        answer: 3
+    },
+    {
+        question: "41.1949年1月,李济深、沈钧儒等著名民主人士55人联合发表(),表示愿意接受中国共产党的领导。",
+        options: [
+            "A. 《对目前时局的宣言》",
+            "B. 《和平建国纲领》",
+            "C. 《对时局的意见》",
+            "D. 《国内和平协定》"
+        ],
+        answer: 2
+    },
+    {
+        question: "2012年11月,中共十八大在北京召开。大会阐明中国特色社会主义的总依据是()。",
+        options: [
+            "A. 马克思主义",
+            "B. 社会主义初级阶段",
+            "C. 以经济建设为中心",
+            "D. 当前我国所处的国际地位"
+        ],
+        answer: 1
+    },
+    {
+        question: "建立一个（）阶级领导的以工农联盟为基础的人民民主专政的人民共和国，这就是中国共产党领导中国人民进行新民主主义革命所要达到的基本目标。",
+        options: [
+            "A. 地主阶级",
+            "B. 农民阶级",
+            "C. 工人阶级",
+            "D. 资产阶级"
+        ],
+        answer: 2
+    },
+    {
+        question: "()是习近平新时代中国特色社会主义思想的核心要义。",
+        options: [
+            "A. 坚持和发展中国特色社会主义",
+            "B. 一带一路",
+            "C. 人类命运共同体",
+            "D. 四个自信"
+        ],
+        answer: 0
+    },
+    {
+        question: "中国人民抗日战争胜利的关键是()。",
+        options: [
+            "A. 国民党的正面战场",
+            "B. 中国共产党的中流砥柱作用",
+            "C. 苏联对中国的援助",
+            "D. 英法美等国的经济援助或军事合作"
+        ],
+        answer: 1
+    },
+    {
+        question: "近代中国诞生的新兴的被压迫阶级是（）。",
+        options: [
+            "A. 工人阶级",
+            "B. 农民阶级",
+            "C. 民族资产阶级",
+            "D. 官僚资产阶级"
+        ],
+        answer: 0
+    },
+    {
+        question: "1901年《》的签订，标志着以慈禧太后为首的清政府已经彻底放弃了抵抗外国侵略者的念头，甘当“洋人的朝廷”。",
+        options: [
+            "A. 南京条约",
+            "B. 北京条约",
+            "C. 马关条约",
+            "D. 辛丑条约"
+        ],
+        answer: 3
+    },
+    {
+        question: "中国的资产阶级民主革命是（）首先发动的。",
+        options: [
+            "A. 洋务派",
+            "B. 资产阶级维新派",
+            "C. 资产阶级革命派",
+            "D. 守旧派"
+        ],
+        answer: 2
+    },
+    {
+        question: "1954年9月,中华人民共和国第一届全国人民代表大会第一次会议在北京召开,大会讨论并通过了《中华人民共和国宪法》。()这一新中国的根本政治制度从此建立。",
+        options: [
+            "A. 基层民主自治制度",
+            "B. 中国共产党领导的多党合作和政治协商制度",
+            "C. 人民代表大会制度",
+            "D. 民族区域自治制度"
+        ],
+        answer: 2
+    },
+    {
+        question: "50.1894年11月，孙中山在檀香山组建了第一个革命团体（），立誓“驱除鞑虏，恢复中华，创立合众政府”。",
+        options: [
+            "A. 兴汉会",
+            "B. 兴中会",
+            "C. 同盟会",
+            "D. 光复会"
+        ],
+        answer: 1
+    }
+,
+    {
+        question: "51. 在1921年中国共产党诞生至1949年新中国成立以前的时期，中国存在着三种主要的政治力量，分别提出了三种建国方案，下面表述不正确的是()。",
+        options: [
+            "A. 地主阶级和买办性的大资产阶级的方案",
+            "B. 民族资产阶级的方案",
+            "C. 农民阶级的方案",
+            "D. 工人阶级和其他进步势力的方案"
+        ],
+        answer: 2 
+    },
+    {
+        question: "52. 1949年中华人民共和国成立，标志着中国进入了()",
+        options: [
+            "A. 社会主义社会",
+            "B. 新民主主义社会",
+            "C. 资本主义社会",
+            "D. 共产主义社会"
+        ],
+        answer: 1 
+    },
+    {
+        question: "53. 1949年9月，中国人民政治协商会议通过的起临时宪法作用的文件是()。",
+        options: [
+            "A. 《论人民民主专政》",
+            "B. 《中国人民政治协商会议组织法》",
+            "C. 《中国人民政治协商会议共同纲领》",
+            "D. 《中华人民共和国中央人民政府组织法》"
+        ],
+        answer: 2 
+    },
+    {
+        question: "54. 掀起全国范围内大革命的高潮的起点是（）。",
+        options: [
+            "A. 五四运动",
+            "B. 五卅运动",
+            "C. 国共第一次合作",
+            "D. 中共一大"
+        ],
+        answer: 1 
+    },
+    {
+        question: "55. 中国人民抗日战争取得完全胜利的重要标志事件为（）。",
+        options: [
+            "A. 1945年8月15日日本天皇裕仁发布《终战诏书》",
+            "B. 1945年9月2日日本代表在投降书上签字",
+            "C. 1945年10月25日中国政府在台湾举行受降仪式",
+            "D. 1945年9月3日为抗日战争胜利几年日"
+        ],
+        answer: 2 
+    },
+    {
+        question: "56. 1935年12月，中共中央召开(),提出了在抗日的条件下与民族资产阶级重建统一战线的新政策，批评了党内长期存在的“左”倾冒险主义、关门主义的错误倾向。",
+        options: [
+            "A. 洛川会议",
+            "B. 遵义会议",
+            "C. 瓦窑堡会议",
+            "D. 八七会议"
+        ],
+        answer: 2 
+    },
+    {
+        question: "57. 1903年，章炳麟发表《》，反对康有为的保皇观点，歌颂革命为“启迪民智，除旧布新”的良药，强调中国人民完全有能力建立民主共和国。",
+        options: [
+            "A. 驳康有为论革命书",
+            "B. 革命军",
+            "C. 警世钟",
+            "D. 猛回头"
+        ],
+        answer: 0 
+    }];
+
+
+
+const multiQuiz = [
+{
+    question: "27. 新时代我国社会主要矛盾的变化，没有改变( )（多选题）",
+    options: [
+      "A. 我国仍处于并将长期处于社会主义初级阶段的基本国情",
+      "B. 我国是世界上最大的发展中国家的国际地位",
+      "C. 我国是世界第二大经济体",
+      "D. 我国是负责任的大国"
+    ],
+    answer: [0, 1]  // 正确答案A,B
+  },
+
+    {
+        question: "58. 鸦片战争后中国社会的阶级关系发生了深刻的变动，其主要表现是()。",
+        options: [
+            "A. 地主阶级本身发生了某些变化",
+            "B. 部分农民阶级向贫农或雇农转化",
+            "C. 工人阶级的诞生",
+            "D. 中国资产阶级的产生"
+        ],
+        answer: [0, 1, 2, 3] 
+    },
+    {
+        question: "59. 帝国主义对华资本输出的方式有()。",
+        options: [
+            "A. 开设工厂",
+            "B. 设立银行",
+            "C. 争夺中国铁路的投资权，投资中国矿山",
+            "D. 向清政府进行政治贷款"
+        ],
+        answer: [0, 1, 2, 3] 
+    },
+    {
+        question: "60. 中国革命取得胜利的法宝是()",
+        options: [
+            "A. 统一战线",
+            "B. 群众路线",
+            "C. 武装斗争",
+            "D. 党的建设"
+        ],
+        answer: [0, 2, 3] 
+    },
+    {
+        question: "61. 毛泽东提出的“两个务必”是()",
+        options: [
+            "A. 务必使同志们继续地保持谦虚,谨慎,不骄,不躁的作风",
+            "B. 务必使同志们继续地保持艰苦奋斗的作风",
+            "C. 务必使同志们继续保持密切联系群众的作风",
+            "D. 务必使同志们继续保持团结协作的作风"
+        ],
+        answer: [0, 1] 
+    },
+    {
+        question: "62. 日本侵略者在其占领区实行残暴的殖民统治，对抗日民主根据地则疯狂摧残，犯下了空前严重的罪行，给中华民族造成了深重的灾难，其表现为（）。",
+        options: [
+            "A. 制造惨绝人寰的大屠杀，残害中国人民",
+            "B. 疯狂掠夺中国的资源和财富",
+            "C. 强制推行奴化教育",
+            "D. 肆意摧残中国文化"
+        ],
+        answer: [0, 1, 2, 3] 
+    },
+    {
+        question: "63. 近代中国人民的反侵略战争()。",
+        options: [
+            "A. 沉重地打击了资本—帝国主义列强的侵华野心。",
+            "B. 使我们的国家和民族历尽劫难、屡遭侵略而不亡。",
+            "C. 它表现出来的爱国主义精神,铸成了中华民族的民族魂。",
+            "D. 反侵略战争的失败,从反面教育了中国人民,极大地促进了中国人的思考、探索和奋起,反侵略战争的过程,是中华民族逐步觉醒的过程。"
+        ],
+        answer: [0, 1, 2, 3] 
+    },
+    
+    {
+        question: "65. 新中国成立成立伊始，面临许多严重困难和紧迫问题，表现在以下（）几个方面。",
+        options: [
+            "A. 能不能保卫住革命胜利的成果，巩固新生人民政权",
+            "B. 能不能战胜严重经济困难，迅速恢复和发展国民经济",
+            "C. 能不能巩固民族独立，维护国家主权和安全",
+            "D. 能不能经受住全国执政的新考验，继续保持优良传统和作风"
+        ],
+        answer: [0, 1, 2, 3] 
+    },
+    {
+        question: "66. 1945年4月23日至6月11日，中国共产党第七次全国代表大会在延安举行，有关七大的内容表述正确的是（）。",
+        options: [
+            "A. 制定了新民主主义国家在政治、经济、文化方面的纲领，提出实现中国工业化的任务",
+            "B. 把党在长期奋斗中形成的优良作风概括为三大作风",
+            "C. 将以毛泽东为主要代表的中国共产党人把马克思主义基本原理同中国具体实际相结合所创造的理论成果正式命名为毛泽东思想，把毛泽东思想确立为党的指导思想并写入党章",
+            "D. 毛泽东在大会预备会上强调看齐意识"
+        ],
+        answer: [0, 1, 2, 3] 
+    },
+    {
+        question: "67. 以下关于新文化运动的表述正确的是（）。",
+        options: [
+            "A. 拥护“德先生”和”赛先生“",
+            "B. 新文化运动在社会上掀起了思想解放的潮流，冲决了人们思想的闸门",
+            "C. 以进化论观点和个性解放思想为主要武器",
+            "D. 新文化运动的倡导者提倡民主、反对专制，提倡科学、反对迷信是切中时弊的"
+        ],
+        answer: [0, 1, 2, 3] 
+    },
+    {
+        question: "68. 辛亥革命的历史功绩有 ()",
+        options: [
+            "A. 结束了两千多年的封建君主专制制度",
+            "B. 冲击了皇权和忠君思想",
+            "C. 打乱了帝国主义在中国的殖民统治秩序",
+            "D. 促进了民族资本主义的发展"
+        ],
+        answer: [0, 1, 2, 3] 
+    },
+    {
+        question: "69. 抗日战争相持阶段到来后，由于以蒋介石为代表的国民党亲英美派开始推行消极抗日、积极反共的政策，团结抗战的局面逐步发生严重危机，出现了中途妥协和内部分裂两大危险。针对这种情况，1939年7月，中国共产党明确提出()的口号，坚决揭露打击汪精卫集团的叛国投降活动，继续争取同蒋介石集团合作抗日",
+        options: [
+            "A. 坚持抗战到底--反对中途妥协",
+            "B. 巩固国内团结--反对内部分裂",
+            "C. 力求全国进步--反对向后倒退",
+            "D. 坚持独立自主"
+        ],
+        answer: [0, 1, 2] 
+    },
+    {
+        question: "70. 为吸引和利用外资,学习国外先进技术和管理经验,中央于1980年5月决定设立经济特区,它们是()。",
+        options: [
+            "A. 深圳",
+            "B. 珠海",
+            "C. 汕头",
+            "D. 厦门"
+        ],
+        answer: [0, 1, 2, 3] 
+    },
+    {
+        question: "71. 中共“二大”制定的民主革命纲领包括(   )",
+        options: [
+            "A. 打倒军阀",
+            "B. 推翻帝国主义压迫",
+            "C. 实现共产主义",
+            "D. 统一中国为真正的民主共和国"
+        ],
+        answer: [0, 1, 3]
+    },
+    {
+        question: "72. 中国共产党早期组织的活动包括（）。",
+        options: [
+            "A. 研究和宣传马克思主义",
+            "B. 到工人中去进行宣传和组织工作",
+            "C. 进行建党问题的讨论和实际组织工作",
+            "D. 发动工农运动"
+        ],
+        answer: [0, 1, 2]
+    },
+    {
+        question: "73. 中国共产党在社会主义初级阶段的基本路线的主要内容是( )，总结为一个中心两个基本点",
+        options: [
+            "A. 以经济建设为中心",
+            "B. 坚持四项基本原则",
+            "C. 坚持改革开放",
+            "D. 坚持自力更生艰苦奋斗"
+        ],
+        answer: [0, 1, 2]
+    },
+    {
+        question: "74. 洋务派举办的洋务事业主要有()",
+        options: [
+            "A. 兴办近代企业",
+            "B. 建立新式海陆军",
+            "C. 创办新式学堂",
+            "D. 派遣留学生"
+        ],
+        answer: [0, 1, 2, 3]
+    },
+    {
+        question: "75. 十月革命推动中国的先进分子从资产阶级民主主义转向社会主义的原因是()",
+        options: [
+            "A. 十月革命启示中国人在经济文化落后的国家也可以用社会主义指引自己走向解放之路",
+            "B. 十月革命后，苏维埃俄国号召反对帝国主义，以新的平等姿态对待中国，推动了社会主义思想在中国的传播",
+            "C. 十月革命中工人和士兵的广泛发动并由此赢得胜利的事实昭示中国先进分子以新的方法开展革命",
+            "D. 十月革命一声炮响，给我们送来了马克思列宁主义"
+        ],
+        answer: [0, 1, 2]
+    },
+    {
+        question: "76. 中国共产党成立的历史意义，正确的表述为（）。",
+        options: [
+            "A. 近代以后中国人民的反帝反封建斗争之所以屡遭挫折和失败，最重要的原因就是没有先进的坚强的政党作为凝聚力量的领导核心。中国共产党的诞生，从根本上改变了这种局面。",
+            "B. 中国共产党一经成立，就把实现共产主义作为党的最高理想和最终目标，义无反顾肩负起实现中华民族伟大复兴的历史使命。中国人民由此踏上了争取民族独立、人民解放的光明道路，开启了实现国家富强、人民幸福的历史征程。",
+            "C. 中国共产党的先驱们创建了中国共产党，形成了坚持真理、坚守理想，践行初心、担当使命，不怕牺牲、英勇斗争，对党忠诚、不负人民的伟大建党精神，这是中国共产党的精神之源。",
+            "D. 中国共产党的成立，深刻改变了近代以后中华民族发展的方向和进程，深刻改变了中国人民和中华民族的前途和命运，深刻改变了世界发展的趋势和格局。"
+        ],
+        answer: [0, 1, 2, 3]
+    },
+    {
+        question: "77. 中国早期信仰马克思主义的人物主要包含以下（）几种类型。",
+        options: [
+            "A. 新文化运动的精神领袖",
+            "B. 五四爱国运动的左翼骨干",
+            "C. 马克思主义学说研究会成员",
+            "D. 原同盟会会员、辛亥革命时期的革命家"
+        ],
+        answer: [0, 1, 3]
+    },
+    {
+        question: "78. 1912年3月中华民国临时参议院颁布的《中华民国临时约法》是中国历史上第一部具有资产阶级共和国宪法性质的法典。毛泽东曾称赞它“带有革命性、民主性”。其“革命性、民主性”主要体现在()",
+        options: [
+            "A. 它规定中华民国国民一律平等",
+            "B. 它规定中华民国之主权属于国民全体",
+            "C. 它以根本大法的形式废除了封建君主专制制度",
+            "D. 它不承认清政府与列强签订的一切不平等条约"
+        ],
+        answer: [0, 1, 2]
+    },
+    {
+        question: "79. 关于太平天国农民起义的历史意义以下表述正确的是()",
+        options: [
+            "A. 客观上对中国的早期工业和民族资本主义的发展起了某些促进作用",
+            "B. 沉重打击了封建统治阶级，强烈撼动了清政府的统治根基",
+            "C. 冲击了孔子和儒家经典的正统权威",
+            "D. 有力地打击了外国侵略势力"
+        ],
+        answer: [1, 2, 3]
+    },
+    {
+        question: "80. 近代中华民族面临的两大历史任务()",
+        options: [
+            "A. 民族独立和人民解放",
+            "B. 国家富强和人民幸福",
+            "C. 实现社会主义和共产主义",
+            "D. 打倒军阀,推翻国际帝国主义的压迫"
+        ],
+        answer: [0, 1]
+    },
+    {
+        question: "81. 红军长征铸就了伟大的长征精神,长征精神就是( )。",
+        options: [
+            "A. 坚定革命的理想和信念,坚信正义事业必然胜利的精神、为了救国救民,不怕艰难险阻",
+            "B. 不惜付出一切牺牲的精神 紧紧依靠人民群众,同人民群众生死相依、患难与共、艰苦奋斗的精神",
+            "C. 坚持独立自主、实事求是,一切从实际出发的精神",
+            "D. 顾全大局、严守纪律、紧密团结的精神"
+        ],
+        answer: [0, 1, 2, 3]
+    },
+    {
+        question: "82. 维新派与守旧派的论战内容主要有()",
+        options: [
+            "A. 要不要变法",
+            "B. 要不要兴民权、设议院,实行君主立宪",
+            "C. 要不要推翻帝制",
+            "D. 要不要废八股、改科举和兴西学"
+        ],
+        answer: [0, 1, 3]
+    },
+    {
+        question: "83. 中国共产党团结带领中国人民进行28年浴血奋战,打败日本帝国主义,推翻国民党反动统治,完成新民主主义革命,建立了中华人民共和国。这一伟大历史贡献实现了中国从几千年封建专制政治向人民民主的伟大飞跃。这一伟大历史贡献的意义还有()",
+        options: [
+            "A. 彻底结束了旧中国半殖民地半封建社会的历史",
+            "B. 彻底结束了旧中国一盘散沙的局面",
+            "C. 彻底废除了列强强加给中国的不平等条约和帝国主义在中国的一切特权",
+            "D. 彻底改变了中国一穷二白的落后面貌"
+        ],
+        answer: [0, 1, 2]
+    },
+    {
+        question: "84. 戊戌维新运动失败以后，以孙中山为代表的革命派在中国掀起了一场资产阶级革命运动，以下表述正确的是（）。",
+        options: [
+            "A. 革命的发生是民族危机加深、社会矛盾激化的结果",
+            "B. 具有历史的必然性",
+            "C. 是当时中国人民争取民族独立、振兴中华深切愿望的集中体现",
+            "D. 是当时中国人民为救亡图存而前赴后继顽强斗争的集中体现"
+        ],
+        answer: [0, 1, 2, 3]
+    },
+    {
+        question: "85. 1917年1月，蔡元培出任北京大学的校长，李大钊、胡适、鲁迅等加入编辑部并成为主要撰稿人，（）成为新文化运动的主要阵地。",
+        options: [
+            "A. 《新青年》杂志",
+            "B. 北京大学",
+            "C. 《民报》",
+            "D. 《新民丛报》"
+        ],
+        answer: [0, 1]
+    },
+    {
+        question: "86. 袁世凯窃夺辛亥革命的果实以后，建立了代表大地主和买办资产阶级利益的北洋军阀反动政权，以下描述正确的有（）。",
+        options: [
+            "A. 在政治上实行军阀官僚的专制统治",
+            "B. 在经济上竭力维护帝国主义、地主阶级和买办资产阶级的利益",
+            "C. 在文化思想方面，尊孔复古思潮猖獗一时",
+            "D. 北洋政府对辛亥革命进行了全面的反攻倒算"
+        ],
+        answer: [0, 1, 2, 3]
+    },
+    {
+        question: "87. 中国共产党人的初心和使命是()",
+        options: [
+            "A. 打倒帝国主义",
+            "B. 推翻封建主义",
+            "C. 为中国人民谋幸福",
+            "D. 为中华民族谋复兴"
+        ],
+        answer: [2, 3]
+    },
+    {
+        question: "88. （）构成了我国社会主义的政治制度体系，为我国社会主义经济基础和相应的经济制度的确立，提供了政治保障。",
+        options: [
+            "A. 基层民主自治制度",
+            "B. 人民代表大会的根本政治制度",
+            "C. 中国共产党领导的多党合作和政治协商制度",
+            "D. 民族区域自治制度等基本政治制度的建立"
+        ],
+        answer: [1, 2, 3]
+    },
+    {
+        question: "89. 西方列强对中国的军事侵略表现在（）几个方面。",
+        options: [
+            "A. 发动侵略战争，屠杀中国人民",
+            "B. 侵占中国领土，划分势力范围",
+            "C. 勒索赔款，掠夺财富",
+            "D. 镇压中国人民的反抗"
+        ],
+        answer: [0, 1, 2, 3]
+    },
+    {
+        question: "90. 在近代中国半殖民地半封建社会,资产阶级共和国的方案之所以行不通的原因是( )",
+        options: [
+            "A. 资产阶级力量过于软弱",
+            "B. 资产阶级没有勇气和能力去领导人民进行彻底的反帝反封建革命斗争",
+            "C. 资产阶级提不出彻底的土地革命的纲领",
+            "D. 资产阶级没有革命指导思想"
+        ],
+        answer: [0, 1, 2]
+    },
+    {
+        question: "91. 学习本课程的主要目的是：认识近现代中国社会发展和革命、建设、改革的历史进程及其内在规律，深刻领会历史和人民是怎样选择了（），深刻领会中国共产党为什么能、马克思主义为什么行、中国特色社会主义为什么好。",
+        options: [
+            "A. 马克思主义",
+            "B. 中国共产党",
+            "C. 社会主义道路",
+            "D. 改革开放"
+        ],
+        answer: [0, 1, 2, 3]
+    }
+];
+const judgeQuiz = [
+  {
+        question: "64. 全民族抗战伊始，中共中央就提出必须在统一战线中坚持独立自主原则。",
+      
+        answer: true
+    },
+    {
+        question: "111. 经济体制的改革，首先在城市取得突破性的进展。",
+        answer: false
+    },
+    {
+        question: "112. 怎样才能争得民族独立、人民解放？近代中国的历史表明，必须首先进行反帝反封建的民族革命。",
+        answer: true
+    },
+    {
+        question: "113. 领导权的变化，是区分新旧民主主义革命的根本标志。",
+        answer: true
+    },
+    {
+        question: "114. 近代中国诞生的工人阶级的主要来源是城乡破产失业的农民、手工业者和城市贫民。",
+        answer: true
+    },
+    {
+        question: "115. 中国的资产阶级先于中国的工人阶级产生。",
+        answer: false
+    },
+    {
+        question: "116. 帝国主义列强并没有能够实现瓜分中国的图谋，最根本的原因是帝国主义列强之间的矛盾和相互制约。",
+        answer: false
+    },
+    {
+        question: "117. 维新派突破洋务派“中体西用”思想的局限，主张用君主立宪制取代君主专制制度。",
+        answer: true
+    },
+    {
+        question: "118. 预备立宪并没有能够挽救清王朝，反而激化了社会矛盾，加重了危机。主要原因在于，清政府改革的根本目的是延续其反动统治。",
+        answer: true
+    },
+    {
+        question: "119. 资产阶级革命派的骨干是一批资产阶级、小资产阶级知识分子。",
+        answer: true
+    },
+    {
+        question: "120. 从根本上说，近代中国革命是被外国侵略者和本国封建统治者逼迫出来的。",
+        answer: true
+    },
+    {
+        question: "121. 1905年，在同盟会的机关报《新民丛报》发刊词中，孙中山将同盟会的纲领概括为三大主义，后被称为三民主义。",
+        answer: false
+    },
+    {
+        question: "122. 同盟会纲领中的民族主义从正面鲜明地提出了反对帝国主义的主张。",
+        answer: false
+    },
+    {
+        question: "123. 同盟会纲领中的民权主义虽然强调了要建立民主共和国，却忽略了广大劳动群众在国家中的地位。",
+        answer: true
+    },
+    {
+        question: "124. 孙中山“平均地权”的主张，没有从正面触及封建土地所有制，不能满足广大农民的土地要求，在革命中难以成为发动广大工农群众的理论武器。",
+        answer: true
+    },
+    {
+        question: "125. 在南京临时政府中，资产阶级革命派占有领导和主体地位。",
+        answer: true
+    },
+    {
+        question: "126. 大革命的主要斗争形式是革命战争。",
+        answer: true
+    },
+    {
+        question: "127. 资本主义经济力量薄弱，发展困难，不可能成为中国工业起飞的基础。",
+        answer: true
+    }
+];
+
+
+
+
+
+  let currentType = 'single'; // 'single', 'multi', 'judge'
+  let current = 0;
+  let multiSelected = []; // 多选题已选项
+
+  function renderQuestion() {
+    let q;
+    if (currentType === 'single') {
+      q = quiz[current];
+    } else if (currentType === 'multi') {
+      q = multiQuiz[current];
+    } else if (currentType === 'judge') {
+      q = judgeQuiz[current];
+    }
+
+    document.getElementById("question").innerText = q.question;
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    if (currentType === 'judge') {
+      ["正确", "错误"].forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkJudgeAnswer(index === 0, div);
+        optionsDiv.appendChild(div);
+      });
+    } else if (currentType === 'multi') {
+      multiSelected = [];
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => toggleMultiSelect(div, index);
+        optionsDiv.appendChild(div);
+      });
+      // 添加放大且居中的提交按钮
+      const submitBtn = document.createElement("button");
+      submitBtn.innerText = "提交";
+      submitBtn.className = "multi-submit-btn";
+      submitBtn.onclick = checkMultiAnswer;
+      optionsDiv.appendChild(submitBtn);
+    } else {
+      // 单选
+      q.options.forEach((opt, index) => {
+        const div = document.createElement("div");
+        div.className = "option";
+        div.innerText = opt;
+        div.onclick = () => checkAnswer(index, div);
+        optionsDiv.appendChild(div);
+      });
+    }
+  }
+
+  function toggleMultiSelect(div, index) {
+    if (multiSelected.includes(index)) {
+      multiSelected = multiSelected.filter(i => i !== index);
+      div.classList.remove("selected");
+    } else {
+      multiSelected.push(index);
+      div.classList.add("selected");
+    }
+  }
+
+  function checkMultiAnswer() {
+    const correct = multiQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      // 提交后，所有正确选项变绿，其他不变色
+      if (correct.includes(i)) {
+        opt.classList.add("correct");
+      }
+      opt.classList.remove("selected");
+    });
+    // 禁用提交按钮
+    const btn = document.querySelector(".multi-submit-btn");
+    if (btn) btn.disabled = true;
+  }
+
+  function checkAnswer(index, el) {
+    let correct = quiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if (i === correct) opt.classList.add("correct");
+      else if (i === index) opt.classList.add("wrong");
+    });
+  }
+
+  function checkJudgeAnswer(isTrue, el) {
+    let correct = judgeQuiz[current].answer;
+    const options = document.querySelectorAll(".option");
+    options.forEach((opt, i) => {
+      opt.onclick = null;
+      if ((i === 0 && correct) || (i === 1 && !correct)) {
+        opt.classList.add("correct");
+      } else if ((i === 0 && !correct && isTrue) || (i === 1 && correct && !isTrue)) {
+        opt.classList.add("wrong");
+      }
+    });
+  }
+
+  function showAnswer() {
+    if (currentType === 'single') {
+      const correctIndex = quiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (i === correctIndex) opt.classList.add("correct");
+      });
+    } else if (currentType === 'multi') {
+      const correct = multiQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if (correct.includes(i)) opt.classList.add("correct");
+      });
+      const btn = document.querySelector("#options button");
+      if (btn) btn.disabled = true;
+    } else if (currentType === 'judge') {
+      let correct = judgeQuiz[current].answer;
+      const options = document.querySelectorAll(".option");
+      options.forEach((opt, i) => {
+        opt.onclick = null;
+        if ((i === 0 && correct) || (i === 1 && !correct)) {
+          opt.classList.add("correct");
+        }
+      });
+    }
+  }
+
+  function nextQuestion() {
+    if (currentType === 'single') {
+      if (current < quiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'judge'; // 先切换到判断题
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'judge') {
+      if (current < judgeQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      } else {
+        currentType = 'multi'; // 判断题做完再到多选题
+        current = 0;
+        renderQuestion();
+      }
+    } else if (currentType === 'multi') {
+      if (current < multiQuiz.length - 1) {
+        current++;
+        renderQuestion();
+      }
+    }
+  }
+
+  function prevQuestion() {
+    if (current > 0) {
+      current--;
+      renderQuestion();
+    } else if (currentType === 'judge') {
+      currentType = 'single';
+      current = quiz.length - 1;
+      renderQuestion();
+    } else if (currentType === 'multi') {
+      currentType = 'judge';
+      current = judgeQuiz.length - 1;
+      renderQuestion();
+    }
+  }
+
+  renderQuestion();
+</script>
+
+</body>
+</html>
